@@ -1237,6 +1237,7 @@ main,
   }
 
   .hero {
+    gap: 52px;
     min-height: auto;
     padding-top: 124px;
   }
@@ -1255,6 +1256,14 @@ main,
     min-width: 0;
   }
 
+  .seatmap-product {
+    gap: 48px;
+  }
+
+  .seatmap-logo-card {
+    width: min(360px, 100%);
+  }
+
   .service-grid,
   .process-rail,
   .team-ribbon,
@@ -1271,6 +1280,61 @@ main,
 
   .case-grid .case-card:first-child {
     grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1020px) {
+  .site-header {
+    min-height: 60px;
+  }
+
+  .brand-mark {
+    width: 52px;
+    height: 38px;
+  }
+
+  .hero {
+    padding-bottom: 74px;
+  }
+
+  .hero h1 {
+    max-width: 860px;
+    font-size: clamp(5.7rem, 14vw, 8.8rem);
+  }
+
+  .hero-lead {
+    max-width: 690px;
+  }
+
+  .hero-device {
+    justify-content: flex-end;
+    margin-top: -34px;
+  }
+
+  .ipad {
+    width: min(64vw, 500px);
+  }
+
+  .seatmap-product {
+    padding-top: 94px;
+  }
+
+  .seatmap-copy h2 {
+    max-width: 820px;
+  }
+
+  .macbook-wrap {
+    display: flex;
+    justify-content: center;
+  }
+
+  .team-photo {
+    aspect-ratio: 1 / 1.12;
+  }
+
+  .case-card,
+  .seatmap-feature {
+    min-height: 460px;
   }
 }
 
@@ -1299,7 +1363,7 @@ main,
 
   .hero {
     min-height: auto;
-    gap: 36px;
+    gap: 30px;
     padding-top: 112px;
     padding-inline: 18px;
     padding-bottom: 58px;
@@ -1320,9 +1384,17 @@ main,
     width: 100%;
   }
 
+  .hero-actions {
+    gap: 10px;
+  }
+
   .ipad {
-    width: min(86vw, 360px);
+    width: min(82vw, 340px);
     transform: rotateX(5deg) rotateY(-6deg) rotateZ(1deg);
+  }
+
+  .hero-device {
+    min-height: 390px;
   }
 
   .hero-device::before {
@@ -1346,6 +1418,15 @@ main,
   .stack-band {
     padding-top: 72px;
     padding-bottom: 72px;
+  }
+
+  .seatmap-product {
+    gap: 34px;
+  }
+
+  .seatmap-logo-card {
+    width: min(100%, 320px);
+    margin-bottom: 22px;
   }
 
   .intro h2,
@@ -1375,7 +1456,7 @@ main,
   }
 
   .macbook {
-    width: min(91vw, 420px);
+    width: min(88vw, 390px);
     min-width: 0;
   }
 
@@ -1390,7 +1471,8 @@ main,
 
   .service-card,
   .case-card,
-  .process-step {
+  .process-step,
+  .seatmap-feature {
     min-height: auto;
   }
 
@@ -1418,6 +1500,14 @@ main,
 
   .feature-shot {
     min-height: 160px;
+  }
+
+  .team-photo {
+    aspect-ratio: 1 / 1.08;
+  }
+
+  .contact-form {
+    padding: 12px;
   }
 
   .site-footer {
