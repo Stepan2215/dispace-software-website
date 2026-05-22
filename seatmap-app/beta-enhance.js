@@ -943,6 +943,7 @@
     let index = 0;
     let renderToken = 0;
     let isAdvancing = false;
+    let clickListenerPaused = false;
     let activeTarget = null;
     let activeMapRegion = null;
     const steps = getTutorialSteps();
@@ -1053,9 +1054,9 @@
 
       window.setTimeout(() => {
         if (token !== renderToken || !tutorial.classList.contains("is-open")) return;
-        let target = targetForStep(step);
-        if (!target) target = document.querySelector("main") || document.body;
         activeMapRegion = step.mode === "map" ? findReservationMapRegion() : null;
+        let target = step.mode === "map" ? findSuggestedTableTarget() || activeMapRegion : targetForStep(step);
+        if (!target) target = document.querySelector("main") || document.body;
         const scrollTarget = activeMapRegion || target;
         scrollTarget.scrollIntoView?.({ behavior: "smooth", block: step.mode === "map" ? "center" : "center", inline: "center" });
 
@@ -1081,12 +1082,6 @@
       render();
     }
 
-    function currentTarget() {
-      const step = steps[index];
-      if (!step) return null;
-      return activeTarget || targetForStep(step);
-    }
-
     function actionableTargetFor(target) {
       return target?.closest?.("button, a, label, [role='button'], [tabindex], input, select, textarea") || target;
     }
@@ -1094,12 +1089,14 @@
     function matchesCurrentAction(event, eventName) {
       if (!tutorial.classList.contains("is-open")) return false;
       if (isAdvancing) return false;
+      if (clickListenerPaused) return false;
       if (!isElement(event.target)) return false;
       if (event.target.closest(".seatmap-tutorial")) return false;
 
       const step = steps[index];
       if (!step) return false;
-      const target = currentTarget();
+      const target = activeTarget;
+      if (!target && step.action !== "main-click") return false;
 
       if (step.action === "main-click") {
         const map = activeMapRegion;
@@ -1132,10 +1129,14 @@
 
     function completeCurrentAction(event, eventName) {
       if (!matchesCurrentAction(event, eventName)) return;
+      clickListenerPaused = true;
       tutorial.classList.remove("is-waiting");
       tutorial.classList.add("is-action-done");
       wait.textContent = "Отлично, действие выполнено";
-      window.setTimeout(advance, 520);
+      window.setTimeout(() => {
+        clickListenerPaused = false;
+        advance();
+      }, 520);
     }
 
     next.addEventListener("click", advance);
@@ -1146,9 +1147,9 @@
     skip.addEventListener("click", close);
     launch.addEventListener("click", () => open(0));
     window.addEventListener("resize", render);
-    document.addEventListener("click", (event) => completeCurrentAction(event, "click"), true);
-    document.addEventListener("input", (event) => completeCurrentAction(event, "input"), true);
-    document.addEventListener("change", (event) => completeCurrentAction(event, "change"), true);
+    document.addEventListener("click", (event) => window.setTimeout(() => completeCurrentAction(event, "click"), 0));
+    document.addEventListener("input", (event) => completeCurrentAction(event, "input"));
+    document.addEventListener("change", (event) => completeCurrentAction(event, "change"));
 
     if (forceTutorial || !window.localStorage.getItem("seatmap:tutorial-seen")) {
       window.setTimeout(() => open(0), 900);
