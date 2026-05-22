@@ -33,7 +33,7 @@ body::before {
 }
 
 .luxury-header {
-  top: 82px !important;
+  top: 14px !important;
   border-color: rgba(231, 189, 120, 0.16) !important;
   background: rgba(12, 8, 5, 0.78) !important;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
@@ -41,45 +41,70 @@ body::before {
 
 .seatmap-command-bar {
   position: fixed;
-  top: 14px;
-  left: 50%;
-  z-index: 90;
-  display: grid;
-  width: min(1180px, calc(100% - 24px));
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 12px;
+  top: 50%;
+  left: 12px;
+  z-index: 115;
+  color: var(--sm-cream);
+  transform: translateY(-50%);
+}
+
+.seatmap-dock-toggle {
+  display: flex;
+  width: 58px;
+  min-height: 58px;
   align-items: center;
-  padding: 10px;
-  border: 1px solid rgba(231, 189, 120, 0.22);
+  justify-content: center;
+  border: 1px solid rgba(231, 189, 120, 0.25);
   border-radius: 8px;
   color: var(--sm-cream);
   background:
     linear-gradient(135deg, rgba(255, 246, 231, 0.105), rgba(231, 189, 120, 0.045)),
     rgba(11, 8, 5, 0.86);
+  cursor: pointer;
   box-shadow: 0 26px 90px rgba(0, 0, 0, 0.36);
-  transform: translateX(-50%);
   backdrop-filter: blur(22px);
 }
 
-.seatmap-command-brand {
-  display: flex;
-  min-width: 178px;
-  align-items: center;
-  gap: 10px;
-  padding: 0 8px;
+.seatmap-dock-toggle div {
+  display: none;
 }
 
-.seatmap-command-brand strong,
-.seatmap-command-brand small {
+.seatmap-command-panel {
+  position: absolute;
+  top: 0;
+  left: calc(100% + 10px);
+  width: min(250px, calc(100vw - 92px));
+  padding: 10px;
+  border: 1px solid rgba(231, 189, 120, 0.22);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 246, 231, 0.105), rgba(231, 189, 120, 0.045)),
+    rgba(11, 8, 5, 0.92);
+  box-shadow: 0 26px 90px rgba(0, 0, 0, 0.36);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-8px) scale(0.98);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  backdrop-filter: blur(22px);
+}
+
+.seatmap-command-bar.is-open .seatmap-command-panel {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0) scale(1);
+}
+
+.seatmap-dock-toggle strong,
+.seatmap-dock-toggle small {
   display: block;
 }
 
-.seatmap-command-brand strong {
+.seatmap-dock-toggle strong {
   font-size: 0.9rem;
   line-height: 1;
 }
 
-.seatmap-command-brand small {
+.seatmap-dock-toggle small {
   margin-top: 4px;
   color: var(--sm-muted);
   font-size: 0.68rem;
@@ -89,17 +114,16 @@ body::before {
 }
 
 .seatmap-command-dot {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 999px;
   background: #35e39f;
   box-shadow: 0 0 24px rgba(53, 227, 159, 0.84);
 }
 
 .seatmap-command-nav {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
+  display: grid;
+  gap: 7px;
   min-width: 0;
 }
 
@@ -117,8 +141,10 @@ body::before {
 }
 
 .seatmap-command-nav button {
+  width: 100%;
   padding: 0 13px;
   cursor: pointer;
+  text-align: left;
 }
 
 .seatmap-command-nav button:hover,
@@ -131,8 +157,8 @@ body::before {
 
 .seatmap-language-select {
   display: grid;
-  min-width: 150px;
   gap: 4px;
+  margin-top: 10px;
 }
 
 .seatmap-language-select span {
@@ -286,6 +312,120 @@ body::before {
   background: rgba(255, 246, 231, 0.055);
 }
 
+.seatmap-credentials-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+  margin-top: 18px;
+  border: 1px solid rgba(231, 189, 120, 0.18);
+  border-radius: 8px;
+  padding: 14px;
+  background:
+    radial-gradient(circle at top right, rgba(231, 189, 120, 0.16), transparent 16rem),
+    rgba(255, 246, 231, 0.045);
+}
+
+.seatmap-credentials-kicker {
+  margin: 0 0 6px;
+  color: var(--sm-gold);
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.seatmap-credentials-card h2 {
+  margin: 0;
+  color: var(--sm-cream);
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.seatmap-credentials-card dl {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 8px;
+  margin: 0;
+}
+
+.seatmap-credentials-card dl div {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  border: 1px solid rgba(255, 246, 231, 0.08);
+  border-radius: 8px;
+  padding: 9px 10px;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.seatmap-credentials-card dt {
+  color: rgba(255, 246, 231, 0.5);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.seatmap-credentials-card dd {
+  margin: 0;
+  color: var(--sm-cream);
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.seatmap-credentials-note {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--sm-muted);
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.seatmap-credentials-fill,
+.seatmap-password-eye {
+  border: 1px solid rgba(231, 189, 120, 0.34);
+  border-radius: 8px;
+  color: #120d07;
+  background: linear-gradient(135deg, #ffe7b4, #c9954d 58%, #8e5d25);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 900;
+}
+
+.seatmap-credentials-fill {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 0.78rem;
+}
+
+.seatmap-password-row {
+  position: relative;
+}
+
+.seatmap-password-row input {
+  padding-right: 54px !important;
+}
+
+.seatmap-password-eye {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  padding: 0;
+  color: var(--sm-cream);
+  background: rgba(255, 246, 231, 0.065);
+}
+
+.seatmap-password-eye.is-active {
+  color: #120d07;
+  background: linear-gradient(135deg, #ffe7b4, #c9954d 58%, #8e5d25);
+}
+
 .luxury-panel,
 .menu-spark,
 .rounded-\[32px\],
@@ -303,50 +443,46 @@ body::before {
 
 @media (max-width: 900px) {
   .luxury-header {
-    top: 132px !important;
-  }
-
-  .seatmap-command-bar {
-    grid-template-columns: 1fr;
-    gap: 9px;
-  }
-
-  .seatmap-command-brand {
-    min-width: 0;
-  }
-
-  .seatmap-command-nav {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .seatmap-command-nav button {
-    width: 100%;
+    top: 12px !important;
   }
 }
 
 @media (max-width: 560px) {
   .luxury-header {
-    top: 170px !important;
+    top: 12px !important;
   }
 
   .seatmap-command-bar {
-    width: min(100% - 16px, 1180px);
-    padding: 8px;
+    top: auto;
+    bottom: 12px;
+    left: 12px;
+    transform: none;
   }
 
-  .seatmap-command-brand small {
-    display: none;
+  .seatmap-command-panel {
+    top: auto;
+    bottom: calc(100% + 10px);
+    left: 0;
+    width: min(260px, calc(100vw - 24px));
   }
 
-  .seatmap-command-nav {
-    gap: 5px;
+  .seatmap-dock-toggle {
+    width: 52px;
+    min-height: 52px;
   }
 
   .seatmap-command-nav button,
   .seatmap-language-select select {
     min-height: 38px;
     font-size: 0.7rem;
+  }
+
+  .seatmap-credentials-card {
+    grid-template-columns: 1fr;
+  }
+
+  .seatmap-credentials-fill {
+    width: 100%;
   }
 
   .seatmap-guide-actions {

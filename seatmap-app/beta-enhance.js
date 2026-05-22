@@ -529,6 +529,80 @@
     modal.setAttribute("aria-hidden", "true");
   }
 
+  function setFieldValue(field, value) {
+    setNativeValue(field, value);
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+    field.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function setupAdminLoginHints() {
+    if (getRouteFromPath() !== "admin") return;
+
+    const passwordInput = Array.from(document.querySelectorAll("input")).find(
+      (input) => input.type === "password" || input.dataset.seatmapPasswordToggle === "true"
+    );
+    const emailInput = Array.from(document.querySelectorAll("input")).find((input) => input.type === "email");
+    const form = passwordInput?.closest("form");
+    if (!form || !emailInput || form.querySelector(".seatmap-credentials-card")) return;
+
+    passwordInput.dataset.seatmapPasswordToggle = "true";
+    const demoPassword = "demo";
+    const card = document.createElement("div");
+    card.className = "seatmap-credentials-card";
+    card.innerHTML = `
+      <div>
+        <p class="seatmap-credentials-kicker">Демо-доступ</p>
+        <h2>Креденшелы для входа</h2>
+      </div>
+      <button class="seatmap-credentials-fill" type="button">Заполнить</button>
+      <dl>
+        <div>
+          <dt>Email</dt>
+          <dd>admin@seatmap.local</dd>
+        </div>
+        <div>
+          <dt>Пароль</dt>
+          <dd><span data-demo-password>${demoPassword}</span></dd>
+        </div>
+      </dl>
+      <p class="seatmap-credentials-note">Это демо-режим: backend mock принимает любой пароль, но для презентации используйте этот.</p>
+    `;
+
+    const submitButton = form.querySelector("button[type='submit']");
+    const toggle = document.createElement("button");
+    toggle.className = "seatmap-password-eye";
+    toggle.type = "button";
+    toggle.setAttribute("aria-label", "Показать пароль");
+    toggle.textContent = "👁";
+    toggle.addEventListener("click", () => {
+      const isPassword = passwordInput.type === "password";
+      passwordInput.type = isPassword ? "text" : "password";
+      toggle.classList.toggle("is-active", isPassword);
+      toggle.setAttribute("aria-label", isPassword ? "Скрыть пароль" : "Показать пароль");
+    });
+
+    let passwordRow = passwordInput.closest(".seatmap-password-row");
+    if (!passwordRow) {
+      passwordRow = document.createElement("div");
+      passwordRow.className = "seatmap-password-row";
+      passwordInput.parentElement.insertBefore(passwordRow, passwordInput);
+      passwordRow.appendChild(passwordInput);
+    }
+    passwordRow.appendChild(toggle);
+
+    card.querySelector(".seatmap-credentials-fill").addEventListener("click", () => {
+      setFieldValue(emailInput, "admin@seatmap.local");
+      setFieldValue(passwordInput, demoPassword);
+      passwordInput.focus();
+    });
+
+    if (submitButton) {
+      form.insertBefore(card, submitButton);
+    } else {
+      form.appendChild(card);
+    }
+  }
+
   function setActiveRoute(route) {
     document.querySelectorAll("[data-seatmap-route]").forEach((button) => {
       button.classList.toggle("is-active", button.dataset.seatmapRoute === route);
@@ -646,34 +720,46 @@
     const bar = document.createElement("div");
     bar.className = "seatmap-command-bar";
     bar.innerHTML = `
-      <div class="seatmap-command-brand">
+      <button class="seatmap-dock-toggle" type="button" aria-expanded="false" aria-label="Открыть навигацию SeatMap">
         <span class="seatmap-command-dot"></span>
         <div>
           <strong>SeatMap Beta</strong>
           <small>${labels.product}</small>
         </div>
+      </button>
+      <div class="seatmap-command-panel">
+        <nav class="seatmap-command-nav" aria-label="SeatMap beta navigation">
+          <button type="button" data-seatmap-route="home">${labels.home}</button>
+          <button type="button" data-seatmap-route="reservation">${labels.reservation}</button>
+          <button type="button" data-seatmap-route="menu">${labels.menu}</button>
+          <button type="button" data-seatmap-route="admin">${labels.admin}</button>
+        </nav>
+        <label class="seatmap-language-select">
+          <span>${labels.language}</span>
+          <select aria-label="SeatMap language">
+            ${Object.entries(languages)
+              .map(
+                ([code, label]) =>
+                  `<option value="${code}" ${code === currentLanguage ? "selected" : ""}>${label}</option>`
+              )
+              .join("")}
+          </select>
+        </label>
       </div>
-      <nav class="seatmap-command-nav" aria-label="SeatMap beta navigation">
-        <button type="button" data-seatmap-route="home">${labels.home}</button>
-        <button type="button" data-seatmap-route="reservation">${labels.reservation}</button>
-        <button type="button" data-seatmap-route="menu">${labels.menu}</button>
-        <button type="button" data-seatmap-route="admin">${labels.admin}</button>
-      </nav>
-      <label class="seatmap-language-select">
-        <span>${labels.language}</span>
-        <select aria-label="SeatMap language">
-          ${Object.entries(languages)
-            .map(
-              ([code, label]) =>
-                `<option value="${code}" ${code === currentLanguage ? "selected" : ""}>${label}</option>`
-            )
-            .join("")}
-        </select>
-      </label>
     `;
 
+    const toggle = bar.querySelector(".seatmap-dock-toggle");
+    toggle.addEventListener("click", () => {
+      const isOpen = bar.classList.toggle("is-open");
+      toggle.setAttribute("aria-expanded", String(isOpen));
+    });
+
     bar.querySelectorAll("[data-seatmap-route]").forEach((button) => {
-      button.addEventListener("click", () => openRoute(button.dataset.seatmapRoute));
+      button.addEventListener("click", () => {
+        openRoute(button.dataset.seatmapRoute);
+        bar.classList.remove("is-open");
+        toggle.setAttribute("aria-expanded", "false");
+      });
     });
 
     bar.querySelector("select").addEventListener("change", (event) => {
@@ -685,12 +771,14 @@
     activateNativeRussian();
     localizeRussianText();
     setupReservationDrafts();
+    setupAdminLoginHints();
     hideNativeLanguageControls();
 
     const observer = new MutationObserver(() => {
       activateNativeRussian();
       localizeRussianText();
       setupReservationDrafts();
+      setupAdminLoginHints();
       hideNativeLanguageControls();
     });
     observer.observe(document.body, { childList: true, subtree: true });
