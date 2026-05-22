@@ -1,0 +1,17 @@
+{
+  "name": "DISpace Software",
+  "short_name": "DISpace",
+  "description": "Custom software, AI platforms and SeatMap restaurant SaaS by DISpace Software.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f1e8",
+  "theme_color": "#07100f",
+  "icons": [
+    {
+      "src": "/assets/brand/dispace-logo-transparent.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
