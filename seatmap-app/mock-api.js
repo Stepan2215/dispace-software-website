@@ -1,6 +1,6 @@
 (function () {
   const originalFetch = window.fetch.bind(window);
-  const apiHostPattern = /https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\]):5183\/api/i;
+  const apiHostPattern = /^(?:https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\]):5183)?\/api/i;
 
   const state = {
     nextReservationId: 18,
@@ -129,7 +129,7 @@
   function getPath(input) {
     const raw = typeof input === "string" ? input : input && input.url;
     if (!raw || !apiHostPattern.test(raw)) return null;
-    return new URL(raw).pathname;
+    return new URL(raw, window.location.origin).pathname;
   }
 
   window.fetch = async function mockSeatMapFetch(input, options = {}) {
