@@ -639,63 +639,110 @@
     });
   }
 
+  function findFormControl(patterns) {
+    const normalizedPatterns = patterns.map((pattern) => pattern.toLowerCase());
+    const controls = Array.from(document.querySelectorAll("input, select, textarea")).filter(
+      (field) => !field.closest(".seatmap-command-bar") && !field.closest(".seatmap-tutorial")
+    );
+
+    return controls.find((field) => {
+      const label = field.closest("label")?.textContent || "";
+      const context = field.closest("div")?.textContent || "";
+      const text = normalizeText(
+        `${field.getAttribute("name") || ""} ${field.getAttribute("aria-label") || ""} ${field.getAttribute("placeholder") || ""} ${label} ${context}`
+      ).toLowerCase();
+      return normalizedPatterns.some((pattern) => text.includes(pattern));
+    }) || controls[0];
+  }
+
   function getTutorialSteps() {
+    const openDock = () => {
+      const bar = document.querySelector(".seatmap-command-bar");
+      if (!bar?.classList.contains("is-open")) {
+        document.querySelector(".seatmap-dock-toggle")?.click();
+      }
+    };
+
     return [
       {
         route: "home",
-        selector: ".seatmap-command-bar",
+        selector: ".seatmap-dock-toggle",
         title: "Это панель навигации",
-        text: "Нажмите на маленькую кнопку слева: здесь быстро открываются карта бронирований, меню, CRM и выбор языка.",
+        text: "Нажмите на маленькую кнопку слева. Я подожду, пока откроется меню навигации.",
         side: "right",
+        action: "click",
+        waiting: "Нажмите на кнопку SeatMap слева",
       },
       {
         route: "reservation",
         selector: "[data-seatmap-route='reservation']",
         title: "Начинаем с карты бронирования",
-        text: "Гость выбирает зону, дату, время, количество людей и видит только подходящие доступные столы.",
+        text: "Теперь выберите раздел карты бронирований в открывшемся меню.",
         side: "right",
+        action: "click",
+        waiting: "Нажмите «Карта бронирований»",
+        manualRoute: true,
       },
       {
         route: "reservation",
-        find: () => findTextElement(["visit details", "детали визита", "reservation details", "дата"]),
+        find: () => findFormControl(["date", "дата", "time", "время", "guests", "гости"]),
         title: "Заполните детали визита",
-        text: "Эти поля управляют логикой доступности. Если дата, время или гости меняются, SeatMap пересчитывает варианты.",
+        text: "Измените дату, время или количество гостей. SeatMap пересчитает доступность и подходящие столы.",
         side: "left",
+        action: "change",
+        waiting: "Измените одно из полей визита",
       },
       {
         route: "reservation",
-        find: () => findTextElement(["hall / non-smoking", "зал / некурящие", "table", "стол"]),
+        find: () => findTextElement(["hall / non-smoking", "зал / некурящие", "table", "стол"]) || document.querySelector("main"),
         title: "Выберите конкретный стол",
-        text: "На живой карте можно кликнуть по столу, оценить вместимость и забронировать нужное место в ресторане.",
+        text: "Кликните по карте или по доступному столу. Это имитирует выбор конкретного места гостем.",
         side: "right",
+        action: "main-click",
+        waiting: "Кликните по карте ресторана",
       },
       {
         route: "reservation",
         find: () => findTextElement(["reserve", "забронировать", "создать бронь"]),
         title: "Создайте бронь",
-        text: "После бронирования появится инструкция: дальше администратор работает с заявкой в CRM.",
+        text: "Нажмите кнопку бронирования. После этого заявка появится в CRM, а система покажет следующий шаг.",
         side: "left",
+        action: "click",
+        waiting: "Нажмите кнопку бронирования",
       },
       {
         route: "admin",
         selector: "[data-seatmap-route='admin']",
         title: "Переход в CRM",
-        text: "В админке обрабатываются брони: подтвердить, отметить прибытие, перенести стол, добавить заметку или no-show.",
+        text: "Откройте CRM-админку через навигацию. Там ресторан работает с бронями и гостями.",
         side: "right",
+        action: "click",
+        before: () => {
+          closeReservationGuide();
+          openDock();
+        },
+        waiting: "Нажмите «CRM-админка»",
+        manualRoute: true,
       },
       {
         route: "admin",
         find: () => document.querySelector(".seatmap-credentials-card") || findTextElement(["креденшелы", "email", "пароль"]),
         title: "Демо-вход уже подсказан",
-        text: "Нажмите «Заполнить», посмотрите пароль через кнопку с глазом и войдите в CRM-панель ресторана.",
+        text: "Нажмите «Заполнить», затем можно посмотреть пароль через кнопку с глазом и войти в панель.",
         side: "right",
+        action: "click",
+        waiting: "Нажмите «Заполнить»",
       },
       {
         route: "menu",
         selector: "[data-seatmap-route='menu']",
         title: "Меню связано с операционной системой",
-        text: "CMS меню синхронизируется с digital menu и заказами гостей после посадки за стол.",
+        text: "В конце откройте цифровое меню. Оно связано с заказами и операционной системой ресторана.",
         side: "right",
+        action: "click",
+        before: openDock,
+        waiting: "Нажмите «Цифровое меню»",
+        manualRoute: true,
       },
     ];
   }
@@ -713,6 +760,7 @@
         <p class="seatmap-tutorial-kicker">Обучение</p>
         <h2></h2>
         <p class="seatmap-tutorial-copy"></p>
+        <div class="seatmap-tutorial-wait"></div>
         <div class="seatmap-tutorial-progress"></div>
         <div class="seatmap-tutorial-actions">
           <button class="seatmap-tutorial-ghost" type="button" data-tour-prev>Назад</button>
@@ -731,6 +779,7 @@
     const card = tutorial.querySelector(".seatmap-tutorial-card");
     const title = tutorial.querySelector("h2");
     const copy = tutorial.querySelector(".seatmap-tutorial-copy");
+    const wait = tutorial.querySelector(".seatmap-tutorial-wait");
     const progress = tutorial.querySelector(".seatmap-tutorial-progress");
     const prev = tutorial.querySelector("[data-tour-prev]");
     const next = tutorial.querySelector("[data-tour-next]");
@@ -741,6 +790,11 @@
       tutorial.classList.remove("is-open");
       tutorial.setAttribute("aria-hidden", "true");
       window.localStorage.setItem("seatmap:tutorial-seen", "true");
+    }
+
+    function advance() {
+      index += 1;
+      render();
     }
 
     function positionAround(target, side) {
@@ -778,9 +832,13 @@
         return;
       }
 
-      if (getRouteFromPath() !== step.route) {
+      if (!step.manualRoute && getRouteFromPath() !== step.route) {
         openRoute(step.route);
       }
+
+      tutorial.classList.remove("is-action-done");
+      tutorial.classList.add("is-waiting");
+      step.before?.();
 
       window.setTimeout(() => {
         let target = targetForStep(step);
@@ -791,9 +849,10 @@
           target = targetForStep(step) || target;
           title.textContent = step.title;
           copy.textContent = step.text;
+          wait.textContent = step.waiting || "Выполните подсвеченное действие";
           progress.textContent = `${index + 1} / ${steps.length}`;
           prev.disabled = index === 0;
-          next.textContent = index === steps.length - 1 ? "Готово" : "Далее";
+          next.textContent = index === steps.length - 1 ? "Готово" : "Я сделал";
           positionAround(target, step.side);
         }, 260);
       }, 180);
@@ -806,10 +865,43 @@
       render();
     }
 
-    next.addEventListener("click", () => {
-      index += 1;
-      render();
-    });
+    function currentTarget() {
+      const step = steps[index];
+      return step ? targetForStep(step) : null;
+    }
+
+    function matchesCurrentAction(event, eventName) {
+      if (!tutorial.classList.contains("is-open")) return false;
+      if (event.target.closest(".seatmap-tutorial")) return false;
+
+      const step = steps[index];
+      if (!step) return false;
+      const target = currentTarget();
+
+      if (step.action === "main-click") {
+        return eventName === "click" && Boolean(event.target.closest("main, #root"));
+      }
+
+      if (step.action === "change") {
+        return ["input", "change"].includes(eventName) && event.target.matches("input, select, textarea");
+      }
+
+      if (step.action === "click") {
+        return eventName === "click" && (!target || target === event.target || target.contains(event.target));
+      }
+
+      return false;
+    }
+
+    function completeCurrentAction(event, eventName) {
+      if (!matchesCurrentAction(event, eventName)) return;
+      tutorial.classList.remove("is-waiting");
+      tutorial.classList.add("is-action-done");
+      wait.textContent = "Отлично, действие выполнено";
+      window.setTimeout(advance, 520);
+    }
+
+    next.addEventListener("click", advance);
     prev.addEventListener("click", () => {
       index = Math.max(0, index - 1);
       render();
@@ -817,6 +909,9 @@
     skip.addEventListener("click", close);
     launch.addEventListener("click", () => open(0));
     window.addEventListener("resize", render);
+    document.addEventListener("click", (event) => completeCurrentAction(event, "click"), true);
+    document.addEventListener("input", (event) => completeCurrentAction(event, "input"), true);
+    document.addEventListener("change", (event) => completeCurrentAction(event, "change"), true);
 
     if (forceTutorial || !window.localStorage.getItem("seatmap:tutorial-seen")) {
       window.setTimeout(() => open(0), 900);
