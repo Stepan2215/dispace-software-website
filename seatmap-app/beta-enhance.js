@@ -660,6 +660,23 @@
     return element?.closest("button, a, label, [role='button'], [tabindex], input, select, textarea") || element;
   }
 
+  function findActionGroup(patterns) {
+    const target = findActionableText(patterns);
+    if (!target) return null;
+
+    let node = target.parentElement;
+    while (node && node !== document.body) {
+      const controls = node.querySelectorAll("button, input, select, textarea, a, [role='button']");
+      const rect = node.getBoundingClientRect();
+      if (controls.length >= 2 && controls.length <= 8 && rect.width > 120 && rect.height < 260) {
+        return node;
+      }
+      node = node.parentElement;
+    }
+
+    return target;
+  }
+
   function getTutorialSteps() {
     const openDock = () => {
       const bar = document.querySelector(".seatmap-command-bar");
@@ -687,24 +704,27 @@
         action: "click",
         waiting: "Нажмите «Карта бронирований»",
         manualRoute: true,
+        spotlightPadding: 10,
       },
       {
         route: "reservation",
-        find: () => findActionableText(["hall / non-smoking", "terrace / smoking", "open terrace", "зал / некурящие", "терраса"]),
+        find: () => findActionGroup(["hall / non-smoking", "terrace / smoking", "open terrace", "зал / некурящие", "терраса"]),
         title: "Сначала выберите зону",
         text: "Начните как гость ресторана: выберите зал, террасу или другую доступную зону. От зоны зависит список свободных столов.",
         side: "left",
         action: "click",
         waiting: "Нажмите на одну из зон ресторана",
+        spotlightPadding: 14,
       },
       {
         route: "reservation",
-        find: () => findActionableText(["today", "tomorrow", "сегодня", "завтра"]) || findFormControl(["date", "дата"]),
+        find: () => findActionGroup(["today", "tomorrow", "сегодня", "завтра"]) || findFormControl(["date", "дата"]),
         title: "Выберите день визита",
         text: "Чаще всего гости выбирают «Сегодня» или «Завтра». Можно нажать быстрый вариант или выбрать конкретную дату в поле.",
         side: "left",
         action: "click-or-change",
         waiting: "Нажмите «Сегодня» / «Завтра» или измените дату",
+        spotlightPadding: 18,
       },
       {
         route: "reservation",
@@ -714,6 +734,7 @@
         side: "left",
         action: "change",
         waiting: "Измените время визита",
+        spotlightPadding: 16,
       },
       {
         route: "reservation",
@@ -723,6 +744,7 @@
         side: "left",
         action: "change",
         waiting: "Измените количество гостей",
+        spotlightPadding: 16,
       },
       {
         route: "reservation",
@@ -735,6 +757,7 @@
         side: "right",
         action: "main-click",
         waiting: "Кликните по подходящему столу или варианту",
+        spotlightPadding: 18,
       },
       {
         route: "reservation",
@@ -744,6 +767,7 @@
         side: "left",
         action: "click",
         waiting: "Нажмите кнопку бронирования",
+        spotlightPadding: 14,
       },
       {
         route: "admin",
@@ -758,6 +782,7 @@
         },
         waiting: "Нажмите «CRM-админка»",
         manualRoute: true,
+        spotlightPadding: 10,
       },
       {
         route: "admin",
@@ -767,6 +792,7 @@
         side: "right",
         action: "click",
         waiting: "Нажмите «Заполнить»",
+        spotlightPadding: 14,
       },
       {
         route: "menu",
@@ -778,6 +804,7 @@
         before: openDock,
         waiting: "Нажмите «Цифровое меню»",
         manualRoute: true,
+        spotlightPadding: 10,
       },
     ];
   }
@@ -809,6 +836,8 @@
     document.body.appendChild(tutorial);
 
     let index = 0;
+    let renderToken = 0;
+    let isAdvancing = false;
     const steps = getTutorialSteps();
     const spotlight = tutorial.querySelector(".seatmap-tutorial-spotlight");
     const card = tutorial.querySelector(".seatmap-tutorial-card");
@@ -828,19 +857,41 @@
     }
 
     function advance() {
+      if (isAdvancing) return;
+      isAdvancing = true;
       index += 1;
-      render();
+      window.setTimeout(() => {
+        isAdvancing = false;
+        render();
+      }, 120);
     }
 
-    function positionAround(target, side) {
+    function getSpotlightRect(target, padding) {
       const rect = target.getBoundingClientRect();
-      const padding = 10;
-      spotlight.style.width = `${Math.max(rect.width + padding * 2, 68)}px`;
-      spotlight.style.height = `${Math.max(rect.height + padding * 2, 54)}px`;
-      spotlight.style.left = `${Math.max(8, rect.left - padding)}px`;
-      spotlight.style.top = `${Math.max(8, rect.top - padding)}px`;
+      const left = Math.max(8, rect.left - padding);
+      const top = Math.max(8, rect.top - padding);
+      const right = Math.min(window.innerWidth - 8, rect.right + padding);
+      const bottom = Math.min(window.innerHeight - 8, rect.bottom + padding);
 
-      const cardWidth = Math.min(360, window.innerWidth - 28);
+      return {
+        left,
+        top,
+        width: Math.max(right - left, 76),
+        height: Math.max(bottom - top, 58),
+        source: rect,
+      };
+    }
+
+    function positionAround(target, side, padding = 10) {
+      const spotlightRect = getSpotlightRect(target, padding);
+      const rect = spotlightRect.source;
+      spotlight.style.width = `${spotlightRect.width}px`;
+      spotlight.style.height = `${spotlightRect.height}px`;
+      spotlight.style.left = `${spotlightRect.left}px`;
+      spotlight.style.top = `${spotlightRect.top}px`;
+
+      const isMobile = window.matchMedia("(max-width: 700px)").matches;
+      const cardWidth = Math.min(isMobile ? 340 : 360, window.innerWidth - 28);
       const preferRight = side !== "left";
       let left = preferRight ? rect.right + 24 : rect.left - cardWidth - 24;
       if (left < 14) left = 14;
@@ -851,8 +902,19 @@
       if (top > window.innerHeight - 310) top = Math.max(14, window.innerHeight - 310);
 
       card.style.width = `${cardWidth}px`;
-      card.style.left = `${left}px`;
-      card.style.top = `${top}px`;
+      if (isMobile) {
+        const targetIsLow = rect.top > window.innerHeight * 0.48;
+        card.style.left = "12px";
+        card.style.right = "12px";
+        card.style.top = targetIsLow ? "12px" : "auto";
+        card.style.bottom = targetIsLow ? "auto" : "12px";
+        card.style.width = "auto";
+      } else {
+        card.style.right = "auto";
+        card.style.bottom = "auto";
+        card.style.left = `${left}px`;
+        card.style.top = `${top}px`;
+      }
       card.dataset.side = preferRight ? "right" : "left";
     }
 
@@ -861,6 +923,7 @@
     }
 
     function render() {
+      const token = ++renderToken;
       const step = steps[index];
       if (!step) {
         close();
@@ -876,11 +939,13 @@
       step.before?.();
 
       window.setTimeout(() => {
+        if (token !== renderToken || !tutorial.classList.contains("is-open")) return;
         let target = targetForStep(step);
         if (!target) target = document.querySelector("main") || document.body;
         target.scrollIntoView?.({ behavior: "smooth", block: "center", inline: "center" });
 
         window.setTimeout(() => {
+          if (token !== renderToken || !tutorial.classList.contains("is-open")) return;
           target = targetForStep(step) || target;
           title.textContent = step.title;
           copy.textContent = step.text;
@@ -888,7 +953,7 @@
           progress.textContent = `${index + 1} / ${steps.length}`;
           prev.disabled = index === 0;
           next.textContent = index === steps.length - 1 ? "Готово" : "Я сделал";
-          positionAround(target, step.side);
+          positionAround(target, step.side, step.spotlightPadding || 10);
         }, 260);
       }, 180);
     }
@@ -911,6 +976,7 @@
 
     function matchesCurrentAction(event, eventName) {
       if (!tutorial.classList.contains("is-open")) return false;
+      if (isAdvancing) return false;
       if (event.target.closest(".seatmap-tutorial")) return false;
 
       const step = steps[index];
@@ -918,16 +984,21 @@
       const target = currentTarget();
 
       if (step.action === "main-click") {
-        return eventName === "click" && Boolean(event.target.closest("main, #root"));
+        return eventName === "click" && Boolean(event.target.closest("#root, main, button, [role='button']"));
       }
 
       if (step.action === "change") {
-        return ["input", "change"].includes(eventName) && event.target.matches("input, select, textarea");
+        const actionTarget = actionableTargetFor(target);
+        return ["input", "change"].includes(eventName) &&
+          event.target.matches("input, select, textarea") &&
+          (!actionTarget || actionTarget === event.target || actionTarget.contains(event.target));
       }
 
       if (step.action === "click-or-change") {
-        if (["input", "change"].includes(eventName) && event.target.matches("input, select, textarea")) return true;
         const actionTarget = actionableTargetFor(target);
+        if (["input", "change"].includes(eventName) && event.target.matches("input, select, textarea")) {
+          return !actionTarget || actionTarget === event.target || actionTarget.contains(event.target);
+        }
         return eventName === "click" && (!actionTarget || actionTarget === event.target || actionTarget.contains(event.target) || event.target.contains(actionTarget));
       }
 

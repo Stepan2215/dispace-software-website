@@ -548,6 +548,8 @@ body::before {
   box-shadow: 0 34px 110px rgba(0, 0, 0, 0.56);
   transform: translateY(10px) scale(0.98);
   pointer-events: auto;
+  max-height: min(560px, calc(100vh - 28px));
+  overflow: auto;
 }
 
 .seatmap-tutorial-card::before {
@@ -768,11 +770,9 @@ body::before {
   }
 
   .seatmap-tutorial-card {
-    right: 12px !important;
-    bottom: 74px !important;
-    left: 12px !important;
-    top: auto !important;
+    max-height: min(48vh, 360px);
     width: auto !important;
+    padding: 14px;
   }
 
   .seatmap-tutorial-card::before,
@@ -782,5 +782,19 @@ body::before {
 
   .seatmap-tutorial-actions {
     grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .seatmap-tutorial-card h2 {
+    font-size: clamp(1.25rem, 7vw, 1.9rem);
+  }
+
+  .seatmap-tutorial-copy {
+    font-size: 0.84rem;
+    line-height: 1.45;
+  }
+
+  .seatmap-tutorial-wait {
+    font-size: 0.72rem;
   }
 }
