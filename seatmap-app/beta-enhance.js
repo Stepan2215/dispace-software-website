@@ -393,6 +393,142 @@
     setActiveRoute(route);
   }
 
+  function getFieldKey(field) {
+    if (!field || field.closest(".seatmap-command-bar")) return "";
+    if (field.type === "password" || field.type === "hidden" || field.type === "file") return "";
+
+    const form = field.closest("form");
+    if (!form) return "";
+
+    const formIndex = Array.from(document.querySelectorAll("form")).indexOf(form);
+    const fieldIndex = Array.from(form.querySelectorAll("input, textarea, select")).indexOf(field);
+    const label =
+      field.getAttribute("name") ||
+      field.getAttribute("aria-label") ||
+      field.getAttribute("placeholder") ||
+      field.id ||
+      field.type ||
+      "field";
+
+    return `seatmap:reservation-draft:${getRouteFromPath()}:form-${formIndex}:${label}:${fieldIndex}`;
+  }
+
+  function setNativeValue(field, value) {
+    const prototype =
+      field instanceof HTMLTextAreaElement
+        ? HTMLTextAreaElement.prototype
+        : field instanceof HTMLSelectElement
+          ? HTMLSelectElement.prototype
+          : HTMLInputElement.prototype;
+    const descriptor = Object.getOwnPropertyDescriptor(prototype, "value");
+
+    if (descriptor?.set) {
+      descriptor.set.call(field, value);
+    } else {
+      field.value = value;
+    }
+  }
+
+  function restoreDraftField(field) {
+    const key = getFieldKey(field);
+    if (!key || field.dataset.seatmapDraftRestored === "true") return;
+
+    const savedValue = window.localStorage.getItem(key);
+    if (savedValue === null) return;
+
+    if (field.type === "checkbox" || field.type === "radio") {
+      field.checked = savedValue === "true";
+    } else {
+      setNativeValue(field, savedValue);
+    }
+
+    field.dataset.seatmapDraftRestored = "true";
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+    field.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function saveDraftField(field) {
+    const key = getFieldKey(field);
+    if (!key) return;
+
+    const value = field.type === "checkbox" || field.type === "radio" ? String(field.checked) : field.value;
+    window.localStorage.setItem(key, value);
+  }
+
+  function setupReservationDrafts(root = document.body) {
+    root.querySelectorAll?.("input, textarea, select").forEach((field) => {
+      restoreDraftField(field);
+
+      if (field.dataset.seatmapDraftBound === "true") return;
+      field.dataset.seatmapDraftBound = "true";
+      field.addEventListener("input", () => saveDraftField(field));
+      field.addEventListener("change", () => saveDraftField(field));
+    });
+  }
+
+  function clearReservationDrafts() {
+    Object.keys(window.localStorage)
+      .filter((key) => key.startsWith("seatmap:reservation-draft:"))
+      .forEach((key) => window.localStorage.removeItem(key));
+  }
+
+  function ensureReservationGuideModal() {
+    let modal = document.querySelector(".seatmap-guide-modal");
+    if (modal) return modal;
+
+    modal = document.createElement("div");
+    modal.className = "seatmap-guide-modal";
+    modal.setAttribute("aria-hidden", "true");
+    modal.innerHTML = `
+      <div class="seatmap-guide-dialog" role="dialog" aria-modal="true" aria-labelledby="seatmap-guide-title">
+        <button class="seatmap-guide-close" type="button" aria-label="Закрыть">×</button>
+        <p class="seatmap-guide-kicker">Бронь создана</p>
+        <h2 id="seatmap-guide-title">Теперь откройте CRM-админку</h2>
+        <p>
+          Заявка гостя уже попала в демо CRM. Перейдите в админ-панель, найдите новое бронирование
+          и обработайте его как администратор ресторана: подтвердите бронь, отметьте прибытие,
+          перенесите стол или добавьте внутреннюю заметку для команды.
+        </p>
+        <div class="seatmap-guide-steps">
+          <span>1. Откройте CRM-админку</span>
+          <span>2. Проверьте карточку гостя</span>
+          <span>3. Подтвердите или измените бронь</span>
+        </div>
+        <div class="seatmap-guide-actions">
+          <button class="seatmap-guide-primary" type="button">Перейти в CRM-админку</button>
+          <button class="seatmap-guide-secondary" type="button">Остаться здесь</button>
+        </div>
+      </div>
+    `;
+
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) closeReservationGuide();
+    });
+    modal.querySelector(".seatmap-guide-close").addEventListener("click", closeReservationGuide);
+    modal.querySelector(".seatmap-guide-secondary").addEventListener("click", closeReservationGuide);
+    modal.querySelector(".seatmap-guide-primary").addEventListener("click", () => {
+      closeReservationGuide();
+      openRoute("admin");
+    });
+
+    document.body.appendChild(modal);
+    return modal;
+  }
+
+  function openReservationGuide() {
+    const modal = ensureReservationGuideModal();
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    modal.querySelector(".seatmap-guide-primary")?.focus();
+  }
+
+  function closeReservationGuide() {
+    const modal = document.querySelector(".seatmap-guide-modal");
+    if (!modal) return;
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+  }
+
   function setActiveRoute(route) {
     document.querySelectorAll("[data-seatmap-route]").forEach((button) => {
       button.classList.toggle("is-active", button.dataset.seatmapRoute === route);
@@ -548,17 +684,23 @@
     setActiveRoute(getRouteFromPath());
     activateNativeRussian();
     localizeRussianText();
+    setupReservationDrafts();
     hideNativeLanguageControls();
 
     const observer = new MutationObserver(() => {
       activateNativeRussian();
       localizeRussianText();
+      setupReservationDrafts();
       hideNativeLanguageControls();
     });
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
   window.addEventListener("popstate", () => setActiveRoute(getRouteFromPath()));
+  window.addEventListener("seatmap:reservation-created", () => {
+    clearReservationDrafts();
+    window.setTimeout(openReservationGuide, 140);
+  });
   window.addEventListener("message", (event) => {
     if (event.data?.type === "seatmap-open-route") {
       openRoute(event.data.route);

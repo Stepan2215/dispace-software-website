@@ -163,6 +163,11 @@
           ...body,
         };
         state.reservations.unshift(reservation);
+        window.dispatchEvent(
+          new CustomEvent("seatmap:reservation-created", {
+            detail: { reservation },
+          })
+        );
         return json(reservation, { status: 201 });
       }
     }
