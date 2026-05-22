@@ -1073,7 +1073,7 @@ main,
 
 .team-card h3 {
   margin: 0;
-  font-size: clamp(1.05rem, 1.15vw, 1.38rem);
+  font-size: clamp(0.94rem, 0.98vw, 1.22rem);
   line-height: 0.96;
   letter-spacing: 0;
 }
@@ -1081,7 +1081,8 @@ main,
 .team-card p {
   margin: 7px 0 0;
   color: rgba(7, 16, 15, 0.66);
-  font-size: 0.82rem;
+  font-size: 0.76rem;
+  line-height: 1.18;
   font-weight: 900;
 }
 
@@ -1089,7 +1090,7 @@ main,
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 10px;
 }
 

@@ -655,6 +655,11 @@
     }) || controls[0];
   }
 
+  function findActionableText(patterns) {
+    const element = findTextElement(patterns);
+    return element?.closest("button, a, label, [role='button'], [tabindex], input, select, textarea") || element;
+  }
+
   function getTutorialSteps() {
     const openDock = () => {
       const bar = document.querySelector(".seatmap-command-bar");
@@ -685,25 +690,55 @@
       },
       {
         route: "reservation",
-        find: () => findFormControl(["date", "дата", "time", "время", "guests", "гости"]),
-        title: "Заполните детали визита",
-        text: "Измените дату, время или количество гостей. SeatMap пересчитает доступность и подходящие столы.",
+        find: () => findActionableText(["hall / non-smoking", "terrace / smoking", "open terrace", "зал / некурящие", "терраса"]),
+        title: "Сначала выберите зону",
+        text: "Начните как гость ресторана: выберите зал, террасу или другую доступную зону. От зоны зависит список свободных столов.",
+        side: "left",
+        action: "click",
+        waiting: "Нажмите на одну из зон ресторана",
+      },
+      {
+        route: "reservation",
+        find: () => findActionableText(["today", "tomorrow", "сегодня", "завтра"]) || findFormControl(["date", "дата"]),
+        title: "Выберите день визита",
+        text: "Чаще всего гости выбирают «Сегодня» или «Завтра». Можно нажать быстрый вариант или выбрать конкретную дату в поле.",
+        side: "left",
+        action: "click-or-change",
+        waiting: "Нажмите «Сегодня» / «Завтра» или измените дату",
+      },
+      {
+        route: "reservation",
+        find: () => findFormControl(["time", "время", "час", "12:00"]),
+        title: "Теперь выберите время",
+        text: "Время влияет на занятость столов и блокировки. SeatMap сразу пересчитывает доступные варианты.",
         side: "left",
         action: "change",
-        waiting: "Измените одно из полей визита",
+        waiting: "Измените время визита",
       },
       {
         route: "reservation",
-        find: () => findTextElement(["hall / non-smoking", "зал / некурящие", "table", "стол"]) || document.querySelector("main"),
-        title: "Выберите конкретный стол",
-        text: "Кликните по карте или по доступному столу. Это имитирует выбор конкретного места гостем.",
+        find: () => findFormControl(["guests", "гости", "people", "количество"]),
+        title: "Укажите количество гостей",
+        text: "Если гостей больше, чем вмещает один стол, система должна показать подходящие комбинации столов рядом.",
+        side: "left",
+        action: "change",
+        waiting: "Измените количество гостей",
+      },
+      {
+        route: "reservation",
+        find: () =>
+          findActionableText(["available tables", "доступные столы", "best available options", "лучшие свободные", "capacity", "вместимость"]) ||
+          findTextElement(["table", "стол"]) ||
+          document.querySelector("main"),
+        title: "Посмотрите варианты и комбинации",
+        text: "После выбора параметров SeatMap показывает все подходящие столы. Для большой компании система предлагает комбинации, если один стол мал.",
         side: "right",
         action: "main-click",
-        waiting: "Кликните по карте ресторана",
+        waiting: "Кликните по подходящему столу или варианту",
       },
       {
         route: "reservation",
-        find: () => findTextElement(["reserve", "забронировать", "создать бронь"]),
+        find: () => findActionableText(["reserve", "забронировать", "создать бронь"]),
         title: "Создайте бронь",
         text: "Нажмите кнопку бронирования. После этого заявка появится в CRM, а система покажет следующий шаг.",
         side: "left",
@@ -870,6 +905,10 @@
       return step ? targetForStep(step) : null;
     }
 
+    function actionableTargetFor(target) {
+      return target?.closest?.("button, a, label, [role='button'], [tabindex], input, select, textarea") || target;
+    }
+
     function matchesCurrentAction(event, eventName) {
       if (!tutorial.classList.contains("is-open")) return false;
       if (event.target.closest(".seatmap-tutorial")) return false;
@@ -886,8 +925,15 @@
         return ["input", "change"].includes(eventName) && event.target.matches("input, select, textarea");
       }
 
+      if (step.action === "click-or-change") {
+        if (["input", "change"].includes(eventName) && event.target.matches("input, select, textarea")) return true;
+        const actionTarget = actionableTargetFor(target);
+        return eventName === "click" && (!actionTarget || actionTarget === event.target || actionTarget.contains(event.target) || event.target.contains(actionTarget));
+      }
+
       if (step.action === "click") {
-        return eventName === "click" && (!target || target === event.target || target.contains(event.target));
+        const actionTarget = actionableTargetFor(target);
+        return eventName === "click" && (!actionTarget || actionTarget === event.target || actionTarget.contains(event.target) || event.target.contains(actionTarget));
       }
 
       return false;
