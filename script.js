@@ -5,7 +5,106 @@ const seatmapSection = document.querySelector(".seatmap-product");
 const siteHeader = document.querySelector(".site-header");
 const menuToggle = document.querySelector(".menu-toggle");
 const mobileMenu = document.querySelector(".mobile-menu");
+const siteLanguageSelect = document.querySelector("#site-language");
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const siteCopy = {
+  ru: {
+    nav: ["Услуги", "SeatMap", "Кейсы", "Команда", "Процесс", "Контакт"],
+    cta: "Обсудить проект",
+    heroLead: "Создаем сильные цифровые продукты для компаний, которым важны скорость, характер и безупречная инженерия.",
+    heroPrimary: "Запустить проект",
+    heroSecondary: "Смотреть кейсы",
+    seatmapKicker: "Flagship product by DISpace Software",
+    seatmapTitle: "SeatMap — операционная система современного ресторана",
+    seatmapText: "Интеллектуальная Restaurant OS для премиальных ресторанов: бронирования, интерактивная карта зала, CRM гостей, digital menu, заказы, аналитика и операционное управление в одной синхронизированной платформе.",
+    beta: "Попробовать beta",
+    product: "Узнать о продукте",
+    introTitle: "Мы проектируем не страницы. Мы собираем цифровые системы, которые двигают бизнес.",
+    introText: "От первого прототипа до production-инфраструктуры: стратегия, UX, разработка, интеграции, аналитика и автоматизация в одной команде.",
+    servicesTitle: "Технологии с визуальной силой и чистой архитектурой",
+    servicesText: "Берем сложные процессы и превращаем их в быстрые интерфейсы, надежные платформы и автоматизацию, которую команда реально использует.",
+    casesTitle: "Кейсы, которые выглядят дорого и работают быстро",
+    nextCase: "Стать следующим кейсом",
+    teamTitle: "Команда, которая превращает сложность в сильные продукты",
+    teamText: "Здесь будут имена и позиции. Сейчас оставил аккуратные placeholders, чтобы можно было быстро вписать финальные роли без перестройки дизайна.",
+    processTitle: "Четкий процесс без лишнего шума",
+    processText: "Работаем короткими циклами, показываем живой прогресс и рано выводим продукт к пользователям.",
+    stackText: "Подбираем стек под продукт, а не под моду: быстрый frontend, надежный backend, понятные данные и инфраструктура, которую можно поддерживать.",
+    contactTitle: "Расскажите, что нужно построить. Мы превратим идею в продукт.",
+    contactText: "Подойдет короткое сообщение: цель, сроки, текущая боль и что должно измениться после запуска.",
+    formName: "Имя",
+    formNamePlaceholder: "Ваше имя",
+    formProject: "Проект",
+    formProjectPlaceholder: "Опишите задачу",
+    submit: "Отправить запрос",
+    submitted: "Запрос готов",
+    footer: "Цифровые продукты с инженерной глубиной",
+  },
+  en: {
+    nav: ["Services", "SeatMap", "Work", "Team", "Process", "Contact"],
+    cta: "Discuss project",
+    heroLead: "We create sharp digital products for companies that value speed, character, and flawless engineering.",
+    heroPrimary: "Start a project",
+    heroSecondary: "View cases",
+    seatmapKicker: "Flagship product by DISpace Software",
+    seatmapTitle: "SeatMap — the operating system for the modern restaurant",
+    seatmapText: "An intelligent Restaurant OS for premium hospitality: reservations, interactive floor maps, guest CRM, digital menu, orders, analytics, and live operations in one synchronized platform.",
+    beta: "Try beta",
+    product: "Explore product",
+    introTitle: "We do not design pages. We build digital systems that move business forward.",
+    introText: "From first prototype to production infrastructure: strategy, UX, development, integrations, analytics, and automation in one team.",
+    servicesTitle: "Technology with visual power and clean architecture",
+    servicesText: "We turn complex operations into fast interfaces, reliable platforms, and automation teams actually use.",
+    casesTitle: "Outcomes that look premium and work fast",
+    nextCase: "Become the next case",
+    teamTitle: "A team that turns complexity into strong products",
+    teamText: "Names and positions will go here. The layout is ready for final roles without rebuilding the design.",
+    processTitle: "A clear process without noise",
+    processText: "We work in short cycles, show live progress, and bring products to users early.",
+    stackText: "We choose the stack for the product, not for fashion: fast frontend, reliable backend, clear data, and maintainable infrastructure.",
+    contactTitle: "Tell us what needs to be built. We will turn the idea into a product.",
+    contactText: "A short message is enough: goal, timing, current pain, and what should change after launch.",
+    formName: "Name",
+    formNamePlaceholder: "Your name",
+    formProject: "Project",
+    formProjectPlaceholder: "Describe the task",
+    submit: "Send request",
+    submitted: "Request ready",
+    footer: "Digital products with engineering depth",
+  },
+  bg: {
+    nav: ["Услуги", "SeatMap", "Кейсове", "Екип", "Процес", "Контакт"],
+    cta: "Обсъди проект",
+    heroLead: "Създаваме силни дигитални продукти за компании, които ценят скоростта, характера и безупречното инженерство.",
+    heroPrimary: "Стартирай проект",
+    heroSecondary: "Виж кейсове",
+    seatmapKicker: "Флагмански продукт на DISpace Software",
+    seatmapTitle: "SeatMap — операционната система на модерния ресторант",
+    seatmapText: "Интелигентна Restaurant OS за премиум ресторанти: резервации, интерактивна карта, CRM за гости, дигитално меню, поръчки, аналитика и оперативно управление в една синхронизирана платформа.",
+    beta: "Пробвай beta",
+    product: "Научи повече",
+    introTitle: "Ние не проектираме страници. Изграждаме дигитални системи, които движат бизнеса.",
+    introText: "От първи прототип до production инфраструктура: стратегия, UX, разработка, интеграции, аналитика и автоматизация в един екип.",
+    servicesTitle: "Технологии с визуална сила и чиста архитектура",
+    servicesText: "Превръщаме сложните процеси в бързи интерфейси, надеждни платформи и автоматизация, която екипът реално използва.",
+    casesTitle: "Кейсове, които изглеждат премиум и работят бързо",
+    nextCase: "Стани следващият кейс",
+    teamTitle: "Екип, който превръща сложността в силни продукти",
+    teamText: "Тук ще бъдат имената и позициите. Дизайнът е подготвен, за да се добавят финалните роли без пренареждане.",
+    processTitle: "Ясен процес без излишен шум",
+    processText: "Работим в кратки цикли, показваме жив прогрес и извеждаме продукта до потребителите рано.",
+    stackText: "Избираме stack според продукта, не според модата: бърз frontend, надежден backend, ясни данни и инфраструктура за поддръжка.",
+    contactTitle: "Разкажете какво трябва да построим. Ще превърнем идеята в продукт.",
+    contactText: "Кратко съобщение е достатъчно: цел, срокове, текущ проблем и какво трябва да се промени след старта.",
+    formName: "Име",
+    formNamePlaceholder: "Вашето име",
+    formProject: "Проект",
+    formProjectPlaceholder: "Опишете задачата",
+    submit: "Изпрати заявка",
+    submitted: "Заявката е готова",
+    footer: "Дигитални продукти с инженерна дълбочина",
+  },
+};
 
 let width = 0;
 let height = 0;
@@ -163,11 +262,76 @@ function setupMobileMenu() {
   window.addEventListener("resize", () => setMenuOpen(false));
 }
 
+function setText(selector, value) {
+  const element = document.querySelector(selector);
+  if (element && value) element.textContent = value;
+}
+
+function setAllText(selector, values) {
+  document.querySelectorAll(selector).forEach((element, index) => {
+    if (values[index]) element.textContent = values[index];
+  });
+}
+
+function applySiteLanguage(language) {
+  const copy = siteCopy[language] || siteCopy.ru;
+  document.documentElement.lang = language;
+  window.localStorage.setItem("dispace-language", language);
+
+  setAllText(".main-nav a", copy.nav);
+  setAllText(".mobile-menu a", copy.nav);
+  setText(".nav-cta", copy.cta);
+  setText(".hero-lead", copy.heroLead);
+  setText(".hero-actions .primary", copy.heroPrimary);
+  setText(".hero-actions .secondary", copy.heroSecondary);
+  setText(".seatmap-copy .section-kicker", copy.seatmapKicker);
+  setText("#seatmap-title", copy.seatmapTitle);
+  setText(".seatmap-copy > p:not(.section-kicker)", copy.seatmapText);
+  setText(".seatmap-actions .gold", copy.beta);
+  setText(".seatmap-actions .ghost-dark", copy.product);
+  setText(".intro h2", copy.introTitle);
+  setText(".intro p", copy.introText);
+  setText("#services-title", copy.servicesTitle);
+  setText(".services .section-heading > p", copy.servicesText);
+  setText("#work-title", copy.casesTitle);
+  setText(".showcase .text-link", copy.nextCase);
+  setText("#team-title", copy.teamTitle);
+  setText(".team .section-heading > p", copy.teamText);
+  setText("#process-title", copy.processTitle);
+  setText(".process .section-heading > p", copy.processText);
+  setText(".stack-copy p:not(.section-kicker)", copy.stackText);
+  setText("#contact-title", copy.contactTitle);
+  setText(".contact-copy p:not(.section-kicker)", copy.contactText);
+  setText(".contact-form label:nth-child(1) span", copy.formName);
+  setText(".contact-form label:nth-child(3) span", copy.formProject);
+  setText(".contact-form button", copy.submit);
+  setText(".site-footer span:nth-child(2)", copy.footer);
+
+  const nameInput = document.querySelector(".contact-form input[name='name']");
+  const messageInput = document.querySelector(".contact-form textarea[name='message']");
+  if (nameInput) nameInput.placeholder = copy.formNamePlaceholder;
+  if (messageInput) messageInput.placeholder = copy.formProjectPlaceholder;
+}
+
+function setupSiteLanguage() {
+  if (!siteLanguageSelect) return;
+
+  const savedLanguage = window.localStorage.getItem("dispace-language");
+  const initialLanguage = siteCopy[savedLanguage] ? savedLanguage : "ru";
+  siteLanguageSelect.value = initialLanguage;
+  applySiteLanguage(initialLanguage);
+
+  siteLanguageSelect.addEventListener("change", (event) => {
+    applySiteLanguage(event.target.value);
+  });
+}
+
 document.querySelector(".contact-form").addEventListener("submit", (event) => {
   event.preventDefault();
   const button = event.currentTarget.querySelector("button");
   const originalText = button.textContent;
-  button.textContent = "Запрос готов";
+  const language = window.localStorage.getItem("dispace-language") || "ru";
+  button.textContent = (siteCopy[language] || siteCopy.ru).submitted;
   button.disabled = true;
 
   window.setTimeout(() => {
@@ -185,6 +349,7 @@ resize();
 revealOnScroll();
 tiltCards();
 setupMobileMenu();
+setupSiteLanguage();
 updateMacbookOpen();
 movePointer({ clientX: pointer.x, clientY: pointer.y });
 draw();

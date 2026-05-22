@@ -163,6 +163,10 @@ h1 {
   margin-top: 28px;
 }
 
+.beta-actions button {
+  cursor: pointer;
+}
+
 .beta-shell {
   padding-bottom: 86px;
 }
@@ -173,6 +177,33 @@ h1 {
   justify-content: space-between;
   gap: 18px;
   margin-bottom: 14px;
+}
+
+.beta-route-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+.beta-route-tabs button {
+  min-height: 46px;
+  border: 1px solid rgba(239, 194, 119, 0.2);
+  border-radius: 8px;
+  color: var(--cream);
+  background: rgba(255, 255, 255, 0.055);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 900;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.beta-route-tabs button:hover {
+  border-color: rgba(239, 194, 119, 0.72);
+  color: #120f0a;
+  background: linear-gradient(135deg, #f6ddb0, #bd8840);
+  transform: translateY(-1px);
 }
 
 .beta-shell-bar h2 {
@@ -261,6 +292,10 @@ h1 {
     flex-direction: column;
   }
 
+  .beta-route-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .beta-frame {
     min-height: 780px;
   }
@@ -332,6 +367,10 @@ h1 {
   .beta-frame {
     min-height: 720px;
     border-radius: 8px;
+  }
+
+  .beta-route-tabs {
+    grid-template-columns: 1fr;
   }
 
   .guide-grid {

@@ -32,6 +32,7 @@
           </p>
           <div class="beta-actions">
             <a class="button" href="#seatmap-live">Открыть beta</a>
+            <button class="back-link beta-route-button" type="button" data-route="admin">Admin CRM</button>
             <a class="back-link" href="seatmap-guide.html">Инструкция</a>
           </div>
         </div>
@@ -48,7 +49,14 @@
           </div>
           <a class="back-link" href="seatmap-app/index.html" target="_blank" rel="noopener">Открыть в новой вкладке</a>
         </div>
+        <div class="beta-route-tabs" aria-label="SeatMap beta sections">
+          <button type="button" data-route="home">Home</button>
+          <button type="button" data-route="reservation">Reservation map</button>
+          <button type="button" data-route="menu">Digital menu</button>
+          <button type="button" data-route="admin">Admin CRM</button>
+        </div>
         <iframe
+          id="seatmap-frame"
           class="beta-frame"
           src="seatmap-app/index.html"
           title="SeatMap beta"
@@ -58,5 +66,37 @@
     </main>
 
     <footer class="product-footer">SeatMap — Restaurant Operating System</footer>
+    <script>
+      const seatmapFrame = document.getElementById("seatmap-frame");
+      let seatmapFrameLoaded = false;
+
+      seatmapFrame?.addEventListener("load", () => {
+        seatmapFrameLoaded = true;
+        const pendingRoute = seatmapFrame.dataset.pendingRoute;
+        if (pendingRoute) {
+          window.setTimeout(() => sendSeatMapRoute(pendingRoute), 120);
+          delete seatmapFrame.dataset.pendingRoute;
+        }
+      });
+
+      function sendSeatMapRoute(route) {
+        seatmapFrame?.contentWindow?.postMessage({
+          type: "seatmap-open-route",
+          route,
+        }, "*");
+      }
+
+      document.querySelectorAll("[data-route]").forEach((button) => {
+        button.addEventListener("click", () => {
+          document.getElementById("seatmap-live")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          if (!seatmapFrameLoaded && seatmapFrame) {
+            seatmapFrame.dataset.pendingRoute = button.dataset.route;
+          }
+          sendSeatMapRoute(button.dataset.route);
+          window.setTimeout(() => sendSeatMapRoute(button.dataset.route), 300);
+          window.setTimeout(() => sendSeatMapRoute(button.dataset.route), 900);
+        });
+      });
+    </script>
   </body>
 </html>
