@@ -24,29 +24,36 @@
     <main class="product-main">
       <section class="hero-page">
         <div>
-          <p class="eyebrow">Private beta access</p>
-          <h1>Попробуйте SeatMap в beta-режиме</h1>
+          <p class="eyebrow">Live beta preview</p>
+          <h1>SeatMap beta уже доступна здесь</h1>
           <p class="lead">
-            Оставьте заявку на демонстрацию Restaurant OS: интерактивная карта,
-            CRM гостей, digital menu, заказы и операционная панель ресторана.
+            Протестируйте Restaurant OS прямо на этой странице: интерактивная карта,
+            бронирования, CRM гостей, меню, blacklist и операционная панель ресторана.
           </p>
-          <form class="panel">
-            <input type="text" name="name" placeholder="Ваше имя" />
-            <input type="email" name="email" placeholder="Email" />
-            <input type="text" name="restaurant" placeholder="Название ресторана" />
-            <select name="format">
-              <option>Premium restaurant</option>
-              <option>Fine dining</option>
-              <option>Beach club / rooftop</option>
-              <option>Hotel restaurant</option>
-            </select>
-            <textarea name="message" rows="5" placeholder="Что хотите протестировать первым?"></textarea>
-            <button class="button" type="submit">Запросить beta-доступ</button>
-          </form>
+          <div class="beta-actions">
+            <a class="button" href="#seatmap-live">Открыть beta</a>
+            <a class="back-link" href="seatmap-guide.html">Инструкция</a>
+          </div>
         </div>
         <div class="hero-art">
           <img src="assets/seatmap/seatmap-crm-screen.jpg" alt="SeatMap CRM preview" />
         </div>
+      </section>
+
+      <section class="beta-shell" id="seatmap-live" aria-label="SeatMap beta application">
+        <div class="beta-shell-bar">
+          <div>
+            <p class="eyebrow">Running app</p>
+            <h2>SeatMap live beta</h2>
+          </div>
+          <a class="back-link" href="seatmap-app/index.html" target="_blank" rel="noopener">Открыть в новой вкладке</a>
+        </div>
+        <iframe
+          class="beta-frame"
+          src="seatmap-app/index.html"
+          title="SeatMap beta"
+          loading="lazy"
+        ></iframe>
       </section>
     </main>
 

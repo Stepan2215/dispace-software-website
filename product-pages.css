@@ -156,6 +156,41 @@ h1 {
   resize: vertical;
 }
 
+.beta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.beta-shell {
+  padding-bottom: 86px;
+}
+
+.beta-shell-bar {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 14px;
+}
+
+.beta-shell-bar h2 {
+  margin: 0;
+  font-size: clamp(1.8rem, 3vw, 3.4rem);
+  line-height: 1;
+}
+
+.beta-frame {
+  display: block;
+  width: 100%;
+  min-height: 840px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #090c0c;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.38);
+}
+
 .guide-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -221,6 +256,15 @@ h1 {
     max-width: 720px;
   }
 
+  .beta-shell-bar {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .beta-frame {
+    min-height: 780px;
+  }
+
   .guide-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -256,6 +300,10 @@ h1 {
     width: 100%;
   }
 
+  .beta-actions {
+    gap: 10px;
+  }
+
   .hero-art,
   .panel,
   .guide-card {
@@ -279,6 +327,11 @@ h1 {
 
   .hero-art {
     padding: 8px;
+  }
+
+  .beta-frame {
+    min-height: 720px;
+    border-radius: 8px;
   }
 
   .guide-grid {
