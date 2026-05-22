@@ -681,25 +681,75 @@
     return target;
   }
 
+  function commonBoundedAncestor(elements, options = {}) {
+    const validElements = elements.filter(Boolean);
+    if (!validElements.length) return null;
+
+    let node = validElements[0];
+    while (node && node !== document.body) {
+      const containsAll = validElements.every((element) => node === element || node.contains(element));
+      const rect = node.getBoundingClientRect();
+      const maxHeight = options.maxHeight || 220;
+      const minWidth = options.minWidth || 120;
+
+      if (containsAll && rect.width >= minWidth && rect.height > 0 && rect.height <= maxHeight) {
+        return node;
+      }
+
+      node = node.parentElement;
+    }
+
+    return validElements[0];
+  }
+
+  function findDateChoiceGroup() {
+    const today = findActionableText(["today", "сегодня"]);
+    const tomorrow = findActionableText(["tomorrow", "завтра"]);
+    const quickChoice = commonBoundedAncestor([today, tomorrow], { maxHeight: 150, minWidth: 180 });
+
+    if (quickChoice) return quickChoice;
+
+    const dateField = findFormControl(["date", "дата"]);
+    if (!dateField) return null;
+
+    let node = dateField.parentElement;
+    while (node && node !== document.body) {
+      const text = normalizeText(node.textContent || "").toLowerCase();
+      const rect = node.getBoundingClientRect();
+      const hasDate = ["date", "дата", "today", "tomorrow", "сегодня", "завтра"].some((word) => text.includes(word));
+      const hasNextFields = ["time", "время", "guests", "гости"].some((word) => text.includes(word));
+      if (hasDate && !hasNextFields && rect.width > 160 && rect.height < 240) return node;
+      node = node.parentElement;
+    }
+
+    return dateField;
+  }
+
   function findReservationMapRegion() {
     const root = document.querySelector("#root") || document.body;
-    const candidates = Array.from(root.querySelectorAll("section, main > div, div")).filter((element) => {
+    const candidates = Array.from(root.querySelectorAll("section, main > div, div")).map((element) => {
       if (element.closest(".seatmap-command-bar, .seatmap-tutorial")) return false;
       const text = normalizeText(element.textContent || "").toLowerCase();
       const rect = element.getBoundingClientRect();
       if (rect.width < 240 || rect.height < 260) return false;
-      const hasTableWords = ["seats", "мест", "table", "стол", "hall", "зал", "available", "доступ"].some((word) =>
+      const tableNumberCount = (text.match(/\b([1-9]|1\d|2\d|29)\b/g) || []).length;
+      const hasMapMarkers = ["entrance", "windows", "wall", "вход", "окна", "стена"].some((word) =>
         text.includes(word)
       );
-      const tableNumberCount = (text.match(/\b([1-9]|1\d|2\d|29)\b/g) || []).length;
-      return hasTableWords && tableNumberCount >= 4;
-    });
+      const hasTableWords = ["seats", "мест", "table", "стол"].some((word) => text.includes(word));
+      const looksLikeVisitDetails = ["visit details", "детали визита", "date", "дата", "time", "время", "guests", "гости"].some((word) =>
+        text.includes(word)
+      );
 
-    return candidates.sort((a, b) => {
-      const areaA = a.getBoundingClientRect().width * a.getBoundingClientRect().height;
-      const areaB = b.getBoundingClientRect().width * b.getBoundingClientRect().height;
-      return areaA - areaB;
-    })[0] || findTextElement(["hall / non-smoking", "зал / некурящие"])?.closest("section, main > div, div");
+      if (tableNumberCount < 8 || !hasTableWords) return false;
+      if (looksLikeVisitDetails && !hasMapMarkers) return false;
+
+      const area = rect.width * rect.height;
+      const score = tableNumberCount * 12 + (hasMapMarkers ? 80 : 0) - Math.min(area / 90000, 40);
+      return { element, score, area };
+    }).filter(Boolean);
+
+    return candidates.sort((a, b) => b.score - a.score || a.area - b.area)[0]?.element || null;
   }
 
   function findSuggestedTableTarget() {
@@ -764,7 +814,7 @@
       },
       {
         route: "reservation",
-        find: () => findActionGroup(["today", "tomorrow", "сегодня", "завтра"]) || findFormControl(["date", "дата"]),
+        find: () => findDateChoiceGroup(),
         title: "Выберите день визита",
         text: "Чаще всего гости выбирают «Сегодня» или «Завтра». Можно нажать быстрый вариант или выбрать конкретную дату в поле.",
         side: "left",
@@ -796,7 +846,6 @@
         route: "reservation",
         find: () =>
           findSuggestedTableTarget() ||
-          findActionableText(["available tables", "доступные столы", "best available options", "лучшие свободные", "capacity", "вместимость"]) ||
           findReservationMapRegion() ||
           document.querySelector("main"),
         title: "Теперь выберите стол на карте",
