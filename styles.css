@@ -1458,7 +1458,6 @@ main,
   .mobile-menu {
     grid-template-columns: 1fr 1fr;
   }
-  }
 
   .hero {
     min-height: auto;
