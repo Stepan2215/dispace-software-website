@@ -551,6 +551,17 @@
     );
   }
 
+  function looksLikeSaveTablesButton(button) {
+    if (!button) return false;
+    const text = normalizeText(button.textContent || "").toLowerCase();
+    return [
+      "save tables",
+      "сохранить столы",
+      "запази масите",
+      "запази маси",
+    ].some((word) => text.includes(word));
+  }
+
   function ensureDemoReservationFields(button) {
     if (getRouteFromPath() !== "reservation" || !looksLikeReservationSubmit(button)) return;
 
@@ -955,6 +966,7 @@
     const match = text.match(/\b(\d+)\s*(seats?|мест|people|гостей)\b/i);
     if (match) return Number(match[1]);
     const tableNumber = tableNumberFromElement(element);
+    if ([46, 47, 48, 49].includes(tableNumber)) return 2;
     if ([5, 6, 8, 9, 10, 11, 24, 25, 28, 29].includes(tableNumber)) return 6;
     return 4;
   }
@@ -1080,6 +1092,83 @@
     });
 
     return targets.length > 0;
+  }
+
+  function findChangeTablesPanel(button) {
+    if (!button) return null;
+    let node = button.parentElement;
+    while (node && node !== document.body) {
+      const text = normalizeText(node.textContent || "").toLowerCase();
+      const rect = node.getBoundingClientRect();
+      const hasSave = ["save tables", "сохранить столы", "запази масите", "запази маси"].some((word) => text.includes(word));
+      const hasChangeTables = ["change tables", "сменить столы", "смена столов", "смяна на маси"].some((word) => text.includes(word));
+      if (hasSave && hasChangeTables && rect.width > 240 && rect.height > 70) return node;
+      node = node.parentElement;
+    }
+    return button.closest("section, div") || document;
+  }
+
+  function getPanelGuestCount(panel) {
+    const fields = Array.from(panel?.querySelectorAll?.("input, select") || []);
+    const guestField = fields.find((field) => {
+      const text = normalizeText(
+        `${field.name || ""} ${field.id || ""} ${field.getAttribute("aria-label") || ""} ${field.closest("label")?.textContent || ""} ${field.parentElement?.textContent || ""}`
+      ).toLowerCase();
+      return /(guest|гост)/.test(text);
+    });
+
+    const value = Number(guestField?.value || guestField?.selectedOptions?.[0]?.textContent?.match(/\d+/)?.[0] || "");
+    return Number.isFinite(value) && value > 0 ? value : 1;
+  }
+
+  function getPanelTableButtons(panel) {
+    return Array.from(panel?.querySelectorAll?.("button, [role='button']") || [])
+      .filter((button) => {
+        if (!isRenderableTarget(button)) return false;
+        const number = tableNumberFromElement(button);
+        if (!number) return false;
+        const text = normalizeText(button.textContent || "");
+        return /^([1-9]|[1-9]\d)$/.test(text);
+      });
+  }
+
+  function isSelectedTableButton(button) {
+    const text = `${button.className || ""} ${button.getAttribute?.("aria-pressed") || ""} ${button.getAttribute?.("aria-selected") || ""}`;
+    return /(selected|active|избран|выбран|true)/i.test(text);
+  }
+
+  function ensureAdminTableCapacity(button) {
+    if (getRouteFromPath() !== "admin" || !looksLikeSaveTablesButton(button)) return false;
+    if (button.dataset.seatmapReplaySubmit === "true") {
+      delete button.dataset.seatmapReplaySubmit;
+      return false;
+    }
+
+    const panel = findChangeTablesPanel(button);
+    const guests = getPanelGuestCount(panel);
+    const tableButtons = getPanelTableButtons(panel);
+    if (!tableButtons.length || guests <= 1) return false;
+
+    const selected = tableButtons.filter(isSelectedTableButton);
+    let capacity = selected.reduce((sum, table) => sum + tableCapacityFromElement(table), 0);
+    if (capacity >= guests) return false;
+
+    const extras = tableButtons
+      .filter((table) => !isSelectedTableButton(table) && !table.disabled && table.getAttribute("aria-disabled") !== "true")
+      .sort((a, b) => tableCapacityFromElement(b) - tableCapacityFromElement(a));
+
+    let clicked = 0;
+    for (const table of extras) {
+      table.click();
+      clicked += 1;
+      capacity += tableCapacityFromElement(table);
+      if (capacity >= guests) break;
+    }
+
+    if (!clicked) return false;
+    button.dataset.seatmapReplaySubmit = "true";
+    window.setTimeout(() => button.click(), 260);
+    return true;
   }
 
   function findLoginArea() {
@@ -1751,6 +1840,12 @@
     document.addEventListener("click", interceptMapStepClick, true);
     document.addEventListener("click", (event) => {
       const button = event.target.closest?.("button, a, [role='button']");
+      if (ensureAdminTableCapacity(button)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return;
+      }
+
       ensureDemoReservationFields(button);
       if (getRouteFromPath() !== "reservation" || !looksLikeReservationSubmit(button)) return;
       if (button.dataset.seatmapReplaySubmit === "true") {

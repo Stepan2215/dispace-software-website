@@ -172,8 +172,35 @@
       }
     }
 
-    if (/^\/api\/reservations\/\d+\/(approve|cancel|arrive|no-show|release|note|tables)$/.test(path)) {
-      return json({ ok: true });
+    const reservationActionMatch = path.match(/^\/api\/reservations\/(\d+)\/(approve|cancel|arrive|no-show|release|note|tables)$/);
+    if (reservationActionMatch) {
+      const [, idRaw, action] = reservationActionMatch;
+      const reservation = state.reservations.find((item) => item.id === Number(idRaw));
+      const body = await readBody(options);
+
+      if (reservation) {
+        if (action === "approve") reservation.status = "Approved";
+        if (action === "cancel") reservation.status = "Cancelled";
+        if (action === "arrive") reservation.status = "Arrived";
+        if (action === "no-show") reservation.status = "No-show";
+        if (action === "release") reservation.status = "Released";
+        if (action === "note") reservation.internalNote = body.internalNote || body.note || reservation.internalNote || "";
+        if (action === "tables") {
+          reservation.tableIds = Array.isArray(body.tableIds)
+            ? body.tableIds
+            : body.tableId
+              ? [body.tableId]
+              : reservation.tableIds;
+          reservation.tableId = reservation.tableIds?.[0] || reservation.tableId;
+          reservation.date = body.date || reservation.date;
+          reservation.time = body.time || reservation.time;
+          reservation.guests = Number(body.guests || reservation.guests || 0);
+          reservation.areaId = body.areaId || reservation.areaId;
+          reservation.areaName = body.areaName || reservation.areaName;
+        }
+      }
+
+      return json(reservation || { ok: true });
     }
 
     if (path === "/api/reservations/block") return json({ ok: true });
