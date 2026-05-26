@@ -702,6 +702,25 @@
     }) || controls[0];
   }
 
+  function findDateField() {
+    const controls = Array.from(document.querySelectorAll("input, select, textarea")).filter(
+      (field) => !field.closest(".seatmap-command-bar") && !field.closest(".seatmap-tutorial")
+    );
+
+    const dateLike = controls.find((field) => {
+      const text = normalizeText(
+        `${field.type || ""} ${field.name || ""} ${field.id || ""} ${field.getAttribute("aria-label") || ""} ${field.getAttribute("placeholder") || ""} ${field.closest("label")?.textContent || ""}`
+      ).toLowerCase();
+      if (/(time|час|время|guest|гост|people|количество)/.test(text)) return false;
+      return field.type === "date" ||
+        text.includes("date") ||
+        text.includes("дата") ||
+        /дд\.мм\.гггг|dd\.mm\.yyyy|yyyy-mm-dd/.test(text);
+    });
+
+    return dateLike || null;
+  }
+
   function findActionableText(patterns) {
     const element = findTextElement(patterns);
     return element?.closest("button, a, label, [role='button'], [tabindex], input, select, textarea") || element;
@@ -817,10 +836,10 @@
   function findDateChoiceGroup() {
     const today = findVisibleActionableByText(["today", "сегодня"]);
     const tomorrow = findVisibleActionableByText(["tomorrow", "завтра"]);
-    const dateField = findFormControl(["date", "дата"]);
-    const quickChoice = makeVirtualTarget([dateField, today, tomorrow], 8, { yOffset: -12 }) ||
-      makeVirtualTarget([today, tomorrow], 8, { yOffset: -18 }) ||
-      commonBoundedAncestor([today, tomorrow], { maxHeight: 150, minWidth: 180 });
+    const dateField = findDateField();
+    const quickChoice = makeVirtualTarget([today, tomorrow], 10, { yOffset: -10 }) ||
+      commonBoundedAncestor([today, tomorrow], { maxHeight: 150, minWidth: 180 }) ||
+      makeVirtualTarget([dateField], 12, { yOffset: -8 });
 
     if (quickChoice) return quickChoice;
 
@@ -1038,6 +1057,29 @@
         birthday: Boolean(normalizeText(birthdayField?.value || "")),
       },
     };
+  }
+
+  function hasSelectedReservationTable() {
+    const selectedWords = /(selected|active|избран|выбран|избрана|актив)/i;
+    return getVisibleTableCandidates(document).some((table) => {
+      const text = normalizeText(table.textContent || "");
+      const classText = String(table.className || "");
+      const aria = table.getAttribute?.("aria-pressed") || table.getAttribute?.("aria-selected") || "";
+      return selectedWords.test(`${classText} ${aria} ${text}`);
+    });
+  }
+
+  function selectRecommendedTablesForDemo() {
+    if (hasSelectedReservationTable()) return false;
+
+    const targets = getRecommendedTableTargets().slice(0, expectedTableCount());
+    targets.forEach((target, targetIndex) => {
+      window.setTimeout(() => {
+        actionableTargetFor(target)?.click?.();
+      }, targetIndex * 90);
+    });
+
+    return targets.length > 0;
   }
 
   function findLoginArea() {
@@ -1639,9 +1681,11 @@
       if (step?.action === "table-selection") {
         const table = findClickedTableElement(event.target);
         const tableNumber = tableNumberFromElement(table);
+        if (!tableNumber) return;
+
         const recommended = getRecommendedTableTargets();
-        const clickedRecommended = recommended.some((element) => element === table || element.contains(table) || table?.contains(element));
-        if (!tableNumber || (!clickedRecommended && !isInsideTarget(activeMapRegion, event.target))) return;
+        const clickedRecommended = recommended.some((element) => element === table || element.contains(table) || table.contains(element));
+        if (!clickedRecommended && !isInsideTarget(activeMapRegion, event.target)) return;
 
         selectedTutorialTables.add(tableNumber);
         updateTableSelectionWait();
@@ -1708,6 +1752,20 @@
     document.addEventListener("click", (event) => {
       const button = event.target.closest?.("button, a, [role='button']");
       ensureDemoReservationFields(button);
+      if (getRouteFromPath() !== "reservation" || !looksLikeReservationSubmit(button)) return;
+      if (button.dataset.seatmapReplaySubmit === "true") {
+        delete button.dataset.seatmapReplaySubmit;
+        return;
+      }
+
+      const selectedNow = hasSelectedReservationTable();
+      const selectedByHelper = selectRecommendedTablesForDemo();
+      if (!selectedNow && selectedByHelper) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        button.dataset.seatmapReplaySubmit = "true";
+        window.setTimeout(() => button.click(), 320);
+      }
     }, true);
     document.addEventListener("click", (event) => window.setTimeout(() => completeCurrentAction(event, "click"), 0));
     document.addEventListener("input", (event) => completeCurrentAction(event, "input"));
