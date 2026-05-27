@@ -19,6 +19,13 @@ const siteCopy = {
     seatmapText: "Интеллектуальная Restaurant OS для премиальных ресторанов: бронирования, интерактивная карта зала, CRM гостей, digital menu, заказы, аналитика и операционное управление в одной синхронизированной платформе.",
     beta: "Попробовать beta",
     product: "Узнать о продукте",
+    proofEyebrow: "Используется рестораном года",
+    proofText: "SeatMap уже работает в Casa di Fratelli — премиальном ресторане, где важны точная посадка гостей, живая карта зала, быстрый контроль бронирований и аккуратный digital guest experience.",
+    proofMetrics: ["Live reservations", "Restaurant CRM", "Digital menu"],
+    proofAwardSoon: "Скоро здесь",
+    proofAwardTitle: "Restaurant of the Year Award",
+    proofAwardText: "Место под награду ресторана года. Добавим бейдж, фото или официальный диплом, когда будет готов материал.",
+    proofLink: "Открыть ресторан",
     introTitle: "Мы проектируем не страницы. Мы собираем цифровые системы, которые двигают бизнес.",
     introText: "От первого прототипа до production-инфраструктуры: стратегия, UX, разработка, интеграции, аналитика и автоматизация в одной команде.",
     servicesTitle: "Технологии с визуальной силой и чистой архитектурой",
@@ -79,6 +86,13 @@ const siteCopy = {
     seatmapText: "An intelligent Restaurant OS for premium hospitality: reservations, interactive floor maps, guest CRM, digital menu, orders, analytics, and live operations in one synchronized platform.",
     beta: "Try beta",
     product: "Explore product",
+    proofEyebrow: "Used by Restaurant of the Year",
+    proofText: "SeatMap is already live at Casa di Fratelli, a premium restaurant where precise seating, a live floor map, fast reservation control, and a refined digital guest experience matter every day.",
+    proofMetrics: ["Live reservations", "Restaurant CRM", "Digital menu"],
+    proofAwardSoon: "Coming soon",
+    proofAwardTitle: "Restaurant of the Year Award",
+    proofAwardText: "Reserved space for the restaurant of the year award. We will add the badge, photo, or official diploma when the material is ready.",
+    proofLink: "Open restaurant",
     introTitle: "We do not design pages. We build digital systems that move business forward.",
     introText: "From first prototype to production infrastructure: strategy, UX, development, integrations, analytics, and automation in one team.",
     servicesTitle: "Technology with visual power and clean architecture",
@@ -139,6 +153,13 @@ const siteCopy = {
     seatmapText: "Интелигентна Restaurant OS за премиум ресторанти: резервации, интерактивна карта, CRM за гости, дигитално меню, поръчки, аналитика и оперативно управление в една синхронизирана платформа.",
     beta: "Пробвай beta",
     product: "Научи повече",
+    proofEyebrow: "Използва се от ресторант на годината",
+    proofText: "SeatMap вече работи в Casa di Fratelli — премиум ресторант, където точната подредба на гости, живата карта на залата, бързият контрол на резервациите и изчистеният digital guest experience са ключови.",
+    proofMetrics: ["Live reservations", "Restaurant CRM", "Digital menu"],
+    proofAwardSoon: "Скоро тук",
+    proofAwardTitle: "Restaurant of the Year Award",
+    proofAwardText: "Място за наградата ресторант на годината. Ще добавим бейдж, снимка или официален диплом, когато материалът е готов.",
+    proofLink: "Отвори ресторанта",
     introTitle: "Ние не проектираме страници. Изграждаме дигитални системи, които движат бизнеса.",
     introText: "От първи прототип до production инфраструктура: стратегия, UX, разработка, интеграции, аналитика и автоматизация в един екип.",
     servicesTitle: "Технологии с визуална сила и чиста архитектура",
@@ -375,6 +396,13 @@ function applySiteLanguage(language) {
   setText(".seatmap-copy > p:not(.section-kicker)", copy.seatmapText);
   setText(".seatmap-actions .gold", copy.beta);
   setText(".seatmap-actions .ghost-dark", copy.product);
+  setText(".proof-eyebrow", copy.proofEyebrow);
+  setText(".proof-copy", copy.proofText);
+  setAllText(".proof-metrics span", copy.proofMetrics || []);
+  setText(".proof-award-slot span", copy.proofAwardSoon);
+  setText(".proof-award-slot strong", copy.proofAwardTitle);
+  setText(".proof-award-slot p", copy.proofAwardText);
+  setText(".proof-link", copy.proofLink);
   setText(".intro h2", copy.introTitle);
   setText(".intro .section-kicker", copy.introKicker);
   setText(".intro p", copy.introText);
