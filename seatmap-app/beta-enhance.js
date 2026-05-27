@@ -16,12 +16,12 @@
   };
   const commandLabels = {
     bg: {
-      product: "Restaurant OS live preview",
+      product: "Restaurant OS демо",
       home: "Начало",
-      reservation: "Карта резерваций",
-      menu: "Цифровое меню",
-      admin: "Admin CRM",
-      language: "Язык",
+      reservation: "Карта резервации",
+      menu: "Дигитално меню",
+      admin: "CRM админка",
+      language: "Език",
     },
     en: {
       product: "Restaurant OS live preview",
@@ -40,6 +40,63 @@
       language: "Язык",
     },
   };
+  const enhancementCopy = {
+    ru: {
+      guideKicker: "Бронь создана",
+      guideTitle: "Теперь откройте CRM-админку",
+      guideText:
+        "Заявка гостя уже попала в демо CRM. Перейдите в админ-панель, найдите новое бронирование и обработайте его как администратор ресторана: подтвердите бронь, отметьте прибытие, перенесите стол или добавьте внутреннюю заметку для команды.",
+      guideSteps: ["1. Откройте CRM-админку", "2. Проверьте карточку гостя", "3. Подтвердите или измените бронь"],
+      guidePrimary: "Перейти в CRM-админку",
+      guideSecondary: "Остаться здесь",
+      close: "Закрыть",
+      credentialsKicker: "Демо-доступ",
+      credentialsTitle: "Креденшелы для входа",
+      credentialsFill: "Заполнить",
+      password: "Пароль",
+      credentialsNote: "Это демо-режим: backend mock принимает любой пароль, но для презентации используйте этот.",
+      showPassword: "Показать пароль",
+      hidePassword: "Скрыть пароль",
+    },
+    en: {
+      guideKicker: "Reservation created",
+      guideTitle: "Now open the CRM admin panel",
+      guideText:
+        "The guest request is already in the demo CRM. Open the admin panel, find the new reservation and process it as the restaurant administrator: approve it, mark arrival, move tables or add an internal team note.",
+      guideSteps: ["1. Open CRM admin", "2. Review the guest card", "3. Approve or edit the reservation"],
+      guidePrimary: "Go to CRM admin",
+      guideSecondary: "Stay here",
+      close: "Close",
+      credentialsKicker: "Demo access",
+      credentialsTitle: "Login credentials",
+      credentialsFill: "Fill in",
+      password: "Password",
+      credentialsNote: "This is demo mode: the mock backend accepts any password, but use this one for presentations.",
+      showPassword: "Show password",
+      hidePassword: "Hide password",
+    },
+    bg: {
+      guideKicker: "Резервацията е създадена",
+      guideTitle: "Сега отворете CRM админката",
+      guideText:
+        "Заявката на госта вече е в демо CRM. Отворете админ панела, намерете новата резервация и я обработете като администратор на ресторанта: потвърдете я, отбележете пристигане, преместете маса или добавете вътрешна бележка за екипа.",
+      guideSteps: ["1. Отворете CRM админката", "2. Проверете картата на госта", "3. Потвърдете или редактирайте резервацията"],
+      guidePrimary: "Към CRM админка",
+      guideSecondary: "Остани тук",
+      close: "Затвори",
+      credentialsKicker: "Демо достъп",
+      credentialsTitle: "Данни за вход",
+      credentialsFill: "Попълни",
+      password: "Парола",
+      credentialsNote: "Това е демо режим: mock backend приема всяка парола, но за презентация използвайте тази.",
+      showPassword: "Покажи паролата",
+      hidePassword: "Скрий паролата",
+    },
+  };
+
+  function getEnhancementCopy() {
+    return enhancementCopy[currentLanguage()] || enhancementCopy.ru;
+  }
   const ruText = new Map(
     Object.entries({
       "Restaurant OS live preview": "Демо Restaurant OS",
@@ -484,27 +541,22 @@
     let modal = document.querySelector(".seatmap-guide-modal");
     if (modal) return modal;
 
+    const copy = getEnhancementCopy();
     modal = document.createElement("div");
     modal.className = "seatmap-guide-modal";
     modal.setAttribute("aria-hidden", "true");
     modal.innerHTML = `
       <div class="seatmap-guide-dialog" role="dialog" aria-modal="true" aria-labelledby="seatmap-guide-title">
-        <button class="seatmap-guide-close" type="button" aria-label="Закрыть">×</button>
-        <p class="seatmap-guide-kicker">Бронь создана</p>
-        <h2 id="seatmap-guide-title">Теперь откройте CRM-админку</h2>
-        <p>
-          Заявка гостя уже попала в демо CRM. Перейдите в админ-панель, найдите новое бронирование
-          и обработайте его как администратор ресторана: подтвердите бронь, отметьте прибытие,
-          перенесите стол или добавьте внутреннюю заметку для команды.
-        </p>
+        <button class="seatmap-guide-close" type="button" aria-label="${copy.close}">×</button>
+        <p class="seatmap-guide-kicker">${copy.guideKicker}</p>
+        <h2 id="seatmap-guide-title">${copy.guideTitle}</h2>
+        <p>${copy.guideText}</p>
         <div class="seatmap-guide-steps">
-          <span>1. Откройте CRM-админку</span>
-          <span>2. Проверьте карточку гостя</span>
-          <span>3. Подтвердите или измените бронь</span>
+          ${copy.guideSteps.map((step) => `<span>${step}</span>`).join("")}
         </div>
         <div class="seatmap-guide-actions">
-          <button class="seatmap-guide-primary" type="button">Перейти в CRM-админку</button>
-          <button class="seatmap-guide-secondary" type="button">Остаться здесь</button>
+          <button class="seatmap-guide-primary" type="button">${copy.guidePrimary}</button>
+          <button class="seatmap-guide-secondary" type="button">${copy.guideSecondary}</button>
         </div>
       </div>
     `;
@@ -608,38 +660,39 @@
 
     passwordInput.dataset.seatmapPasswordToggle = "true";
     const demoPassword = "demo";
+    const copy = getEnhancementCopy();
     const card = document.createElement("div");
     card.className = "seatmap-credentials-card";
     card.innerHTML = `
       <div>
-        <p class="seatmap-credentials-kicker">Демо-доступ</p>
-        <h2>Креденшелы для входа</h2>
+        <p class="seatmap-credentials-kicker">${copy.credentialsKicker}</p>
+        <h2>${copy.credentialsTitle}</h2>
       </div>
-      <button class="seatmap-credentials-fill" type="button">Заполнить</button>
+      <button class="seatmap-credentials-fill" type="button">${copy.credentialsFill}</button>
       <dl>
         <div>
           <dt>Email</dt>
           <dd>admin@seatmap.local</dd>
         </div>
         <div>
-          <dt>Пароль</dt>
+          <dt>${copy.password}</dt>
           <dd><span data-demo-password>${demoPassword}</span></dd>
         </div>
       </dl>
-      <p class="seatmap-credentials-note">Это демо-режим: backend mock принимает любой пароль, но для презентации используйте этот.</p>
+      <p class="seatmap-credentials-note">${copy.credentialsNote}</p>
     `;
 
     const submitButton = form.querySelector("button[type='submit']");
     const toggle = document.createElement("button");
     toggle.className = "seatmap-password-eye";
     toggle.type = "button";
-    toggle.setAttribute("aria-label", "Показать пароль");
+    toggle.setAttribute("aria-label", copy.showPassword);
     toggle.textContent = "👁";
     toggle.addEventListener("click", () => {
       const isPassword = passwordInput.type === "password";
       passwordInput.type = isPassword ? "text" : "password";
       toggle.classList.toggle("is-active", isPassword);
-      toggle.setAttribute("aria-label", isPassword ? "Скрыть пароль" : "Показать пароль");
+      toggle.setAttribute("aria-label", isPassword ? copy.hidePassword : copy.showPassword);
     });
 
     let passwordRow = passwordInput.closest(".seatmap-password-row");
@@ -2169,6 +2222,58 @@
     return window.localStorage.getItem("restaurant-lang") || "ru";
   }
 
+  function isInteractiveTouchTarget(target) {
+    return Boolean(
+      target?.closest?.(
+        "input, textarea, select, button, a, label, [role='button'], [contenteditable='true'], .seatmap-tutorial, .seatmap-entry-choice, .seatmap-command-bar"
+      )
+    );
+  }
+
+  function installTouchNavigationGuard() {
+    if (window.__seatmapTouchNavigationGuardInstalled) return;
+    window.__seatmapTouchNavigationGuardInstalled = true;
+
+    let touchStart = null;
+    window.addEventListener(
+      "touchstart",
+      (event) => {
+        if (event.touches.length !== 1) {
+          touchStart = null;
+          return;
+        }
+
+        const touch = event.touches[0];
+        touchStart = {
+          x: touch.clientX,
+          y: touch.clientY,
+          target: event.target,
+        };
+      },
+      { capture: true, passive: true }
+    );
+
+    window.addEventListener(
+      "touchend",
+      (event) => {
+        if (!touchStart || event.changedTouches.length !== 1) return;
+        const touch = event.changedTouches[0];
+        const dx = touch.clientX - touchStart.x;
+        const dy = touch.clientY - touchStart.y;
+        const distance = Math.hypot(dx, dy);
+        const startedOnControl = isInteractiveTouchTarget(touchStart.target);
+        touchStart = null;
+
+        // The bundled demo contains swipe navigation between routes. On tablets and phones
+        // diagonal scrolls can accidentally trigger it, so non-control gestures stay as scroll only.
+        if (!startedOnControl && distance > 16) {
+          event.stopImmediatePropagation();
+        }
+      },
+      { capture: true }
+    );
+  }
+
   function normalizeText(value) {
     return value.replace(/\s+/g, " ").trim();
   }
@@ -2303,6 +2408,7 @@
 
     document.body.appendChild(bar);
     buildFrameBlocker();
+    installTouchNavigationGuard();
     setActiveRoute(getRouteFromPath());
     activateNativeRussian();
     localizeRussianText();
