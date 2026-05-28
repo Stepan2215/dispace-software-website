@@ -21,10 +21,6 @@ const siteCopy = {
     product: "Узнать о продукте",
     proofEyebrow: "Най-добър италиански ресторант на годината",
     proofText: "SeatMap уже работает в Casa di Fratelli — премиальном ресторане, где важны точная посадка гостей, живая карта зала, быстрый контроль бронирований и аккуратный digital guest experience.",
-    proofStoryLabel: "Bulgarian National Hotel and Restaurant Award 2026",
-    proofStoryTitle: "Grand Prix Winner",
-    proofStoryText: "Премиальная ресторанная операционная система для бренда, которому нужен безупречный контроль гостевого опыта.",
-    proofLink: "Открыть ресторан",
     introTitle: "Мы проектируем не страницы. Мы собираем цифровые системы, которые двигают бизнес.",
     introText: "От первого прототипа до production-инфраструктуры: стратегия, UX, разработка, интеграции, аналитика и автоматизация в одной команде.",
     servicesTitle: "Технологии с визуальной силой и чистой архитектурой",
@@ -87,10 +83,6 @@ const siteCopy = {
     product: "Explore product",
     proofEyebrow: "Best Italian Restaurant of the Year",
     proofText: "SeatMap is already live at Casa di Fratelli, a premium restaurant where precise seating, a live floor map, fast reservation control, and a refined digital guest experience matter every day.",
-    proofStoryLabel: "Bulgarian National Hotel and Restaurant Award 2026",
-    proofStoryTitle: "Grand Prix Winner",
-    proofStoryText: "A premium restaurant operating system for a brand that needs flawless control of every guest experience.",
-    proofLink: "Open restaurant",
     introTitle: "We do not design pages. We build digital systems that move business forward.",
     introText: "From first prototype to production infrastructure: strategy, UX, development, integrations, analytics, and automation in one team.",
     servicesTitle: "Technology with visual power and clean architecture",
@@ -153,10 +145,6 @@ const siteCopy = {
     product: "Научи повече",
     proofEyebrow: "Най-добър италиански ресторант на годината",
     proofText: "SeatMap вече работи в Casa di Fratelli — премиум ресторант, където точната подредба на гости, живата карта на залата, бързият контрол на резервациите и изчистеният digital guest experience са ключови.",
-    proofStoryLabel: "Bulgarian National Hotel and Restaurant Award 2026",
-    proofStoryTitle: "Grand Prix Winner",
-    proofStoryText: "Премиум ресторантска операционна система за бранд, който има нужда от безупречен контрол върху всяко гостуване.",
-    proofLink: "Отвори ресторанта",
     introTitle: "Ние не проектираме страници. Изграждаме дигитални системи, които движат бизнеса.",
     introText: "От първи прототип до production инфраструктура: стратегия, UX, разработка, интеграции, аналитика и автоматизация в един екип.",
     servicesTitle: "Технологии с визуална сила и чиста архитектура",
@@ -395,10 +383,6 @@ function applySiteLanguage(language) {
   setText(".seatmap-actions .ghost-dark", copy.product);
   setText(".proof-eyebrow", copy.proofEyebrow);
   setText(".proof-copy", copy.proofText);
-  setText(".proof-story span", copy.proofStoryLabel);
-  setText(".proof-story strong", copy.proofStoryTitle);
-  setText(".proof-story p", copy.proofStoryText);
-  setText(".proof-link", copy.proofLink);
   setText(".intro h2", copy.introTitle);
   setText(".intro .section-kicker", copy.introKicker);
   setText(".intro p", copy.introText);
