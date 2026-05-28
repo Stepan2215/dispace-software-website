@@ -199,29 +199,45 @@ h1 {
   background: rgba(0, 0, 0, 0.22);
 }
 
-.award-placeholder {
-  min-height: 150px;
+.award-showcase {
+  display: grid;
+  justify-items: center;
+  min-height: 230px;
   padding: 18px;
-  border: 1px dashed rgba(239, 194, 119, 0.42);
+  border: 1px solid rgba(239, 194, 119, 0.28);
   border-radius: 8px;
   background:
+    radial-gradient(circle at 50% 0, rgba(239, 194, 119, 0.2), transparent 58%),
     linear-gradient(145deg, rgba(239, 194, 119, 0.14), rgba(255, 255, 255, 0.03)),
     rgba(0, 0, 0, 0.22);
 }
 
-.award-placeholder span {
+.award-showcase img {
+  width: min(210px, 82%);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  filter:
+    drop-shadow(0 22px 32px rgba(0, 0, 0, 0.34))
+    drop-shadow(0 0 22px rgba(239, 194, 119, 0.16));
+}
+
+.award-showcase span {
+  margin-top: 14px;
   color: var(--gold);
   font-size: 0.72rem;
   font-weight: 900;
   letter-spacing: 0.14em;
+  text-align: center;
   text-transform: uppercase;
 }
 
-.award-placeholder strong {
+.award-showcase strong {
   display: block;
-  margin-top: 16px;
+  margin-top: 10px;
   font-size: clamp(1.25rem, 2vw, 2rem);
   line-height: 1;
+  text-align: center;
 }
 
 .panel {
