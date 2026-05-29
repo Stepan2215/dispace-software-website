@@ -898,12 +898,13 @@
   }
 
   function findDateChoiceGroup() {
-    const today = findVisibleActionableByText(["today", "сегодня"]);
-    const tomorrow = findVisibleActionableByText(["tomorrow", "завтра"]);
+    const today = findVisibleActionableByText(["today", "сегодня", "днес"]);
+    const tomorrow = findVisibleActionableByText(["tomorrow", "завтра", "утре"]);
     const dateField = findDateField();
-    const quickChoice = makeVirtualTarget([today, tomorrow], 10, { yOffset: -10 }) ||
-      commonBoundedAncestor([today, tomorrow], { maxHeight: 150, minWidth: 180 }) ||
-      makeVirtualTarget([dateField], 12, { yOffset: -8 });
+    const quickChoice = makeVirtualTarget([dateField, today, tomorrow].filter(Boolean), 12, { yOffset: -18 }) ||
+      commonBoundedAncestor([dateField, today, tomorrow].filter(Boolean), { maxHeight: 240, minWidth: 180 }) ||
+      makeVirtualTarget([today, tomorrow].filter(Boolean), 12, { yOffset: -18 }) ||
+      makeVirtualTarget([dateField], 12, { yOffset: -10 });
 
     if (quickChoice) return quickChoice;
 
@@ -1231,8 +1232,29 @@
       findTextElement(["admin login", "вход", "пароль"]);
   }
 
+  function findCredentialsFillButton() {
+    const card = document.querySelector(".seatmap-credentials-card");
+    const scopedButton = Array.from(card?.querySelectorAll?.("button") || [])
+      .find((button) => /fill|заполн|попъл/i.test(normalizeText(button.textContent || "")));
+    return scopedButton ||
+      findActionableText(["заполнить", "попълни", "fill in", "fill"]);
+  }
+
   function findAdminPanelTarget(patterns) {
     return findActionGroup(patterns) || findActionableText(patterns) || findTextElement(patterns);
+  }
+
+  function findAdminTab(patterns) {
+    return findVisibleActionableByText(patterns) || findActionableText(patterns);
+  }
+
+  function openAdminTab(patterns) {
+    if (getRouteFromPath() !== "admin") return;
+    const tab = findAdminTab(patterns);
+    if (!tab) return;
+    const stateText = `${tab.className || ""} ${tab.getAttribute?.("aria-selected") || ""} ${tab.getAttribute?.("aria-pressed") || ""}`;
+    if (/active|selected|true/i.test(stateText)) return;
+    tab.click?.();
   }
 
   function findClickedTableElement(node) {
@@ -1369,12 +1391,24 @@
       "Работа с заявкой": "Работа със заявка",
       "В списке бронирований администратор подтверждает бронь, отменяет её или отмечает no-show. Это основная операционная очередь.": "В списъка с резервации администраторът потвърждава, отменя или отбелязва no-show. Това е основната оперативна опашка.",
       "Попробуйте действие с бронью или нажмите «Я сделал»": "Пробвайте действие с резервация или натиснете „Готово“",
+      "Ручное создание брони": "Ръчно създаване на резервация",
+      "Администратор может создать бронирование вручную: выбрать гостя, время, зону и столы без перехода на публичную карту.": "Администраторът може да създаде резервация ръчно: гост, час, зона и маси без публичната карта.",
+      "Откройте форму новой брони или нажмите «Я сделал»": "Отворете формата за нова резервация или натиснете „Готово“",
+      "Блокировки и события": "Блокировки и събития",
+      "Здесь ресторан закрывает зоны или столы под частные события, технические работы и специальные посадки.": "Тук ресторантът затваря зони или маси за частни събития, технически дейности и специални настанявания.",
+      "Посмотрите блокировки или нажмите «Я сделал»": "Разгледайте блокировките или натиснете „Готово“",
       "Перенос и комбинации столов": "Преместване и комбинации от маси",
       "В CRM можно менять столы для брони: выбрать другой стол, сохранить комбинацию и освободить место при no-show.": "В CRM можете да сменяте масите за резервация: да изберете друга маса, да запазите комбинация и да освободите място при no-show.",
       "Посмотрите блок смены столов": "Разгледайте блока за смяна на маси",
       "Карта ресторана в админке": "Карта на ресторанта в админката",
       "В разделе карты администратор может передвигать столы, добавлять новые, менять вместимость и сохранять layout для сайта.": "В раздела карта администраторът може да мести маси, да добавя нови, да променя капацитет и да запазва layout за сайта.",
       "Откройте карту или нажмите «Я сделал»": "Отворете картата или натиснете „Готово“",
+      "Клиенты и история гостей": "Клиенти и история на гости",
+      "В клиентской базе видны контакты, история визитов, заметки, blacklist, regular guest и согласия для маркетинга.": "В клиентската база се виждат контакти, история на посещения, бележки, blacklist, regular guest и маркетингови съгласия.",
+      "Откройте клиентов или нажмите «Я сделал»": "Отворете клиентите или натиснете „Готово“",
+      "Админы и audit log": "Админи и audit log",
+      "Финальный административный слой: роли, доступы, быстрый вход и журнал важных действий в системе.": "Финалният административен слой: роли, достъпи, бърз вход и журнал на важните действия.",
+      "Откройте админов или нажмите «Я сделал»": "Отворете админите или натиснете „Готово“",
       "Меню связано с операционной системой": "Менюто е свързано с операционната система",
       "В конце откройте цифровое меню. Оно связано с заказами и операционной системой ресторана.": "Накрая отворете дигиталното меню. То е свързано с поръчките и операционната система на ресторанта.",
       "Нажмите «Цифровое меню»": "Натиснете „Дигитално меню“",
@@ -1556,14 +1590,15 @@
       },
       {
         route: "admin",
-        find: () => findLoginArea(),
+        find: () => findCredentialsFillButton() || findLoginArea(),
         title: "Демо-вход уже подсказан",
         text: "Нажмите «Заполнить»: email и пароль подставятся автоматически. Карточка обучения теперь не перекрывает поля, чтобы пароль было удобно проверить глазиком.",
-        side: "left",
+        side: "right",
         action: "click",
         waiting: "Нажмите «Заполнить»",
-        spotlightPadding: 22,
+        spotlightPadding: 14,
         cardSize: "wide",
+        settleDelay: 520,
       },
       {
         route: "admin",
@@ -1574,6 +1609,7 @@
         action: "click",
         waiting: "Нажмите кнопку входа",
         spotlightPadding: 14,
+        settleDelay: 360,
       },
       {
         route: "admin",
@@ -1585,6 +1621,7 @@
         waiting: "Посмотрите на метрики CRM",
         spotlightPadding: 18,
         cardSize: "wide",
+        settleDelay: 700,
       },
       {
         route: "admin",
@@ -1605,8 +1642,36 @@
         side: "left",
         action: "click-or-next",
         waiting: "Попробуйте действие с бронью или нажмите «Я сделал»",
+        before: () => openAdminTab(["резервации", "reservations"]),
         spotlightPadding: 16,
         cardSize: "wide",
+        settleDelay: 360,
+      },
+      {
+        route: "admin",
+        find: () => findAdminPanelTarget(["новая резервация", "new reservation", "гость", "телефон"]),
+        title: "Ручное создание брони",
+        text: "Администратор может создать бронирование вручную: выбрать гостя, время, зону и столы без перехода на публичную карту.",
+        side: "left",
+        action: "click-or-next",
+        waiting: "Откройте форму новой брони или нажмите «Я сделал»",
+        before: () => openAdminTab(["новая резервация", "new reservation"]),
+        spotlightPadding: 18,
+        cardSize: "wide",
+        settleDelay: 420,
+      },
+      {
+        route: "admin",
+        find: () => findAdminPanelTarget(["блокируй", "блокировать", "block", "зала", "hall"]),
+        title: "Блокировки и события",
+        text: "Здесь ресторан закрывает зоны или столы под частные события, технические работы и специальные посадки.",
+        side: "left",
+        action: "click-or-next",
+        waiting: "Посмотрите блокировки или нажмите «Я сделал»",
+        before: () => openAdminTab(["блокирай зала", "блокировать зал", "block"]),
+        spotlightPadding: 18,
+        cardSize: "wide",
+        settleDelay: 420,
       },
       {
         route: "admin",
@@ -1616,8 +1681,10 @@
         side: "left",
         action: "next",
         waiting: "Посмотрите блок смены столов",
+        before: () => openAdminTab(["резервации", "reservations"]),
         spotlightPadding: 18,
         cardSize: "wide",
+        settleDelay: 360,
       },
       {
         route: "admin",
@@ -1627,8 +1694,36 @@
         side: "left",
         action: "click-or-next",
         waiting: "Откройте карту или нажмите «Я сделал»",
+        before: () => openAdminTab(["карта", "map"]),
         spotlightPadding: 18,
         cardSize: "wide",
+        settleDelay: 460,
+      },
+      {
+        route: "admin",
+        find: () => findAdminPanelTarget(["клиенты", "гости", "clients", "blacklist", "regular"]),
+        title: "Клиенты и история гостей",
+        text: "В клиентской базе видны контакты, история визитов, заметки, blacklist, regular guest и согласия для маркетинга.",
+        side: "left",
+        action: "click-or-next",
+        waiting: "Откройте клиентов или нажмите «Я сделал»",
+        before: () => openAdminTab(["клиенты", "clients"]),
+        spotlightPadding: 18,
+        cardSize: "wide",
+        settleDelay: 420,
+      },
+      {
+        route: "admin",
+        find: () => findAdminPanelTarget(["администраторы", "админы", "admins", "audit", "одит", "журнал"]),
+        title: "Админы и audit log",
+        text: "Финальный административный слой: роли, доступы, быстрый вход и журнал важных действий в системе.",
+        side: "left",
+        action: "click-or-next",
+        waiting: "Откройте админов или нажмите «Я сделал»",
+        before: () => openAdminTab(["админы", "admins", "audit", "одит"]),
+        spotlightPadding: 18,
+        cardSize: "wide",
+        settleDelay: 420,
       },
       {
         route: "menu",
@@ -1695,6 +1790,7 @@
     let activeTarget = null;
     let activeMapRegion = null;
     let selectedTutorialTables = new Set();
+    let repositionTimer = 0;
     const steps = getTutorialSteps();
     const spotlight = tutorial.querySelector(".seatmap-tutorial-spotlight");
     const hotspot = tutorial.querySelector(".seatmap-tutorial-hotspot");
@@ -1867,6 +1963,72 @@
       return step.selector ? document.querySelector(step.selector) : step.find?.();
     }
 
+    function resolveTargetForStep(step) {
+      activeMapRegion = step.mode === "map" ? findReservationMapRegion() : null;
+      const target = step.mode === "map"
+        ? targetForStep(step) || findSuggestedTableTarget() || activeMapRegion
+        : targetForStep(step);
+      return target || document.querySelector("main") || document.body;
+    }
+
+    function scrollTargetForStep(step, target) {
+      if (step.mode === "map") return activeMapRegion || target;
+      if (step.scrollTarget) return step.scrollTarget() || target;
+      return target;
+    }
+
+    function scrollBlockForStep(step) {
+      if (step.scrollBlock) return step.scrollBlock;
+      if (step.action === "table-selection") return "center";
+      if (step.action === "contact-form") return "center";
+      if (step.route === "admin") return "center";
+      return "center";
+    }
+
+    function waitForScrollIdle(callback, maxFrames = 22) {
+      let lastX = window.scrollX;
+      let lastY = window.scrollY;
+      let stableFrames = 0;
+      let frames = 0;
+
+      function tick() {
+        frames += 1;
+        const samePosition = Math.abs(window.scrollX - lastX) < 1 && Math.abs(window.scrollY - lastY) < 1;
+        stableFrames = samePosition ? stableFrames + 1 : 0;
+        lastX = window.scrollX;
+        lastY = window.scrollY;
+
+        if (stableFrames >= 3 || frames >= maxFrames) {
+          callback();
+          return;
+        }
+
+        window.requestAnimationFrame(tick);
+      }
+
+      window.requestAnimationFrame(tick);
+    }
+
+    function resolveTargetWhenReady(step, callback, attempts = 0) {
+      const target = resolveTargetForStep(step);
+      const rect = target?.getBoundingClientRect?.();
+      const hasTargetBox = rect && rect.width > 2 && rect.height > 2;
+      const isFallback = target === document.body || target === document.querySelector("main");
+      const canUseFallback = attempts >= 10 || step.allowFallback;
+
+      if (hasTargetBox && (!isFallback || canUseFallback || attempts >= 3)) {
+        callback(target);
+        return;
+      }
+
+      if (attempts >= 18) {
+        callback(target);
+        return;
+      }
+
+      window.setTimeout(() => resolveTargetWhenReady(step, callback, attempts + 1), 120);
+    }
+
     function render() {
       const token = ++renderToken;
       const step = steps[index];
@@ -1890,28 +2052,50 @@
 
       window.setTimeout(() => {
         if (token !== renderToken || !tutorial.classList.contains("is-open")) return;
-        activeMapRegion = step.mode === "map" ? findReservationMapRegion() : null;
-        let target = step.mode === "map" ? targetForStep(step) || findSuggestedTableTarget() || activeMapRegion : targetForStep(step);
-        if (!target) target = document.querySelector("main") || document.body;
-        const scrollTarget = activeMapRegion || target;
-        scrollTarget.scrollIntoView?.({ behavior: "smooth", block: step.mode === "map" ? "center" : "center", inline: "center" });
-
-        window.setTimeout(() => {
+        resolveTargetWhenReady(step, (initialTarget) => {
           if (token !== renderToken || !tutorial.classList.contains("is-open")) return;
-          target = step.mode === "map" ? targetForStep(step) || target : targetForStep(step) || target;
-          activeTarget = target;
-          title.textContent = step.title;
-          copy.textContent = step.text;
-          wait.textContent = step.waiting || ui.fallbackWait;
-          if (step.action === "table-selection") updateTableSelectionWait();
-          if (step.action === "contact-form") updateContactFormWait();
-          meter.style.width = `${((index + 1) / steps.length) * 100}%`;
-          progress.textContent = `${index + 1} / ${steps.length}`;
-          prev.disabled = index === 0;
-          next.textContent = index === steps.length - 1 ? ui.done : ui.made;
-          positionAround(target, step.side, step.spotlightPadding || 10, step);
-        }, 260);
-      }, 180);
+          const scrollTarget = scrollTargetForStep(step, initialTarget);
+          scrollTarget?.scrollIntoView?.({ behavior: "auto", block: scrollBlockForStep(step), inline: "center" });
+
+          waitForScrollIdle(() => {
+            if (token !== renderToken || !tutorial.classList.contains("is-open")) return;
+            const target = resolveTargetForStep(step) || initialTarget;
+            window.requestAnimationFrame(() => {
+              if (token !== renderToken || !tutorial.classList.contains("is-open")) return;
+              paintStep(step, target);
+            });
+          });
+        });
+      }, step.settleDelay || 220);
+    }
+
+    function paintStep(step, target) {
+      activeTarget = target;
+      title.textContent = step.title;
+      copy.textContent = step.text;
+      wait.textContent = step.waiting || ui.fallbackWait;
+      if (step.action === "table-selection") updateTableSelectionWait();
+      if (step.action === "contact-form") updateContactFormWait();
+      meter.style.width = `${((index + 1) / steps.length) * 100}%`;
+      progress.textContent = `${index + 1} / ${steps.length}`;
+      prev.disabled = index === 0;
+      next.textContent = index === steps.length - 1 ? ui.done : ui.made;
+      positionAround(target, step.side, step.spotlightPadding || 10, step);
+    }
+
+    function repositionActiveStep() {
+      if (!tutorial.classList.contains("is-open")) return;
+      const step = steps[index];
+      if (!step || !activeTarget) return;
+      window.clearTimeout(repositionTimer);
+      repositionTimer = window.setTimeout(() => {
+        if (!tutorial.classList.contains("is-open")) return;
+        const target = resolveTargetForStep(step) || activeTarget;
+        activeTarget = target;
+        if (step.action === "table-selection") updateTableSelectionWait();
+        if (step.action === "contact-form") updateContactFormWait();
+        positionAround(target, step.side, step.spotlightPadding || 10, step);
+      }, 80);
     }
 
     function open(startIndex = 0) {
@@ -2152,6 +2336,7 @@
       completeCurrentAction(event, "hotspot");
     });
     window.addEventListener("resize", render);
+    window.addEventListener("scroll", repositionActiveStep, { passive: true });
     document.addEventListener("click", interceptMapStepClick, true);
     document.addEventListener("click", (event) => {
       const button = event.target.closest?.("button, a, [role='button']");
